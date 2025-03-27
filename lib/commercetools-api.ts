@@ -1,6 +1,36 @@
 "use server"
 
 // Types based on commercetools API
+export interface Deployment {
+  id: string
+  version: number
+  status: string
+  key: string
+  preview: boolean
+  type: string
+  deployedRegion: string
+  applications: Application[]
+  connector: Connector
+}
+
+
+export interface Connector {
+  id: string
+  key: string
+  version: string
+  name: string
+}
+
+
+export interface Application {
+  applicationName: string
+  id: string
+  schedule?: string
+  topic?: string
+  url?: string
+}
+
+
 export interface DeploymentLog {
   type: "HTTP_REQUEST" | "APPLICATION_TEXT" | "APPLICATION_JSON"
   deploymentId: string
@@ -13,20 +43,17 @@ export interface DeploymentLog {
   }
 }
 
+export interface DeploymentQueryParams {
+  key?: string
+}
+
 export interface DeploymentLogQueryParams {
-  limit?: number
-  offset?: number
-  sort?: string[]
-  filter?: string[]
-  startDate?: string
-  endDate?: string
+  key: string
 }
 
 export interface DeploymentLogResponse {
-  results: DeploymentLog[]
-  total: number
-  offset: number
-  limit: number
+  data: DeploymentLog[]
+  next: string | null
 }
 
 // Configuration
@@ -79,31 +106,31 @@ async function getAccessToken(): Promise<string> {
 }
 
 // API Functions
-export async function fetchDeploymentLogs(params: DeploymentLogQueryParams = {}): Promise<DeploymentLogResponse> {
+export async function fetchDeployments(params: DeploymentQueryParams = {}) {
   try {
     const token = await getAccessToken()
 
     // Build query parameters
     const queryParams = new URLSearchParams()
 
-    if (params.limit) queryParams.append("limit", params.limit.toString())
-    if (params.offset) queryParams.append("offset", params.offset.toString())
+    // if (params.limit) queryParams.append("limit", params.limit.toString())
+    // if (params.offset) queryParams.append("offset", params.offset.toString())
 
-    if (params.sort && params.sort.length > 0) {
-      params.sort.forEach((sort) => queryParams.append("sort", sort))
-    }
+    // if (params.sort && params.sort.length > 0) {
+    //   params.sort.forEach((sort) => queryParams.append("sort", sort))
+    // }
 
-    if (params.filter && params.filter.length > 0) {
-      params.filter.forEach((filter) => queryParams.append("filter", filter))
-    }
+    // if (params.filter && params.filter.length > 0) {
+    //   params.filter.forEach((filter) => queryParams.append("filter", filter))
+    // }
 
-    if (params.startDate) queryParams.append("startDate", params.startDate)
-    if (params.endDate) queryParams.append("endDate", params.endDate)
+    // if (params.startDate) queryParams.append("startDate", params.startDate)
+    if (params.key) queryParams.append("key", params.key)
 
     // https://connect.{{region}}.commercetools.com/{{project-key}}/deployments/5b4ddcbb-f97a-40f1-a22a-5bd67907efa0/logs?applicationName=inventory-movement
 
     // Make the API request
-    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments`
+    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments/${queryParams.toString()}`
     console.log('url', url);
     
     const response = await fetch(url, {
@@ -128,6 +155,63 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams = {})
       total: 0,
       offset: 0,
       limit: 0,
+    }
+  }
+}
+
+
+export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Promise<DeploymentLogResponse> {
+  try {
+    const token = await getAccessToken()
+
+    // Build query parameters
+    const queryParams = new URLSearchParams()
+
+    // if (params.limit) queryParams.append("limit", params.limit.toString())
+    // if (params.offset) queryParams.append("offset", params.offset.toString())
+
+    // if (params.sort && params.sort.length > 0) {
+    //   params.sort.forEach((sort) => queryParams.append("sort", sort))
+    // }
+
+    // if (params.filter && params.filter.length > 0) {
+    //   params.filter.forEach((filter) => queryParams.append("filter", filter))
+    // }
+
+    // if (params.startDate) queryParams.append("startDate", params.startDate)
+    // if (params.key) queryParams.append("endDate", params.key)
+
+    // https://connect.{{region}}.commercetools.com/{{project-key}}/deployments/5b4ddcbb-f97a-40f1-a22a-5bd67907efa0/logs?applicationName=inventory-movement
+    console.log('params', params);
+    
+    // Make the API request
+    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs`
+    console.log('url', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    console.log('data', data);
+    
+
+    return data
+  } catch (error) {
+    console.error("Error fetching deployment logs:", error)
+
+    // Return mock data for development/demo purposes
+    return {
+      data: [],
+      next: null,
     }
   }
 }

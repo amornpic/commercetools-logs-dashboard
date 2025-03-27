@@ -18,11 +18,12 @@ import { DateRangePicker } from "@/components/date-range-picker"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
 
-import { getDeploymentLogs } from "@/app/actions"
-import type { DeploymentLog, DeploymentLogQueryParams } from "@/lib/commercetools-api"
+import { getDeploymentLogs, getDeployments } from "@/app/actions"
+import type { DeploymentLog, DeploymentLogQueryParams, Deployment } from "@/lib/commercetools-api"
+import { DeploymentsTable } from "./deployments-table"
 
-export function DeploymentLogsDashboard() {
-  const [selectedLog, setSelectedLog] = useState<DeploymentLog | null>(null)
+export function Deployments() {
+  const [selectedLog, setSelectedLog] = useState<Deployment | null>(null)
   const [loading, setLoading] = useState(true)
   const [logs, setLogs] = useState<DeploymentLog[]>([])
   const [totalLogs, setTotalLogs] = useState(0)
@@ -42,43 +43,42 @@ export function DeploymentLogsDashboard() {
 
     try {
       const params: DeploymentLogQueryParams = {
-        key: "stg-cn-deviceonly-fulfilment",
-        // limit,
-        // offset: (page - 1) * limit,
-        // sort: ["-timestamp"],
+        limit,
+        offset: (page - 1) * limit,
+        sort: ["-timestamp"],
       }
 
       // Add filters
-      // const filters = []
+      const filters = []
 
-      // if (logType !== "all") {
-      //   filters.push(`type="${logType}"`)
-      // }
+      if (logType !== "all") {
+        filters.push(`type="${logType}"`)
+      }
 
-      // if (severity !== "all") {
-      //   filters.push(`severity="${severity}"`)
-      // }
+      if (severity !== "all") {
+        filters.push(`severity="${severity}"`)
+      }
 
-      // if (searchQuery) {
-      //   filters.push(`details.message="${searchQuery}*"`)
-      // }
+      if (searchQuery) {
+        filters.push(`details.message="${searchQuery}*"`)
+      }
 
-      // if (filters.length > 0) {
-      //   params.filter = filters
-      // }
+      if (filters.length > 0) {
+        params.filter = filters
+      }
 
-      // // Add date range if available
-      // if (dateRange.from) {
-      //   params.startDate = dateRange.from.toISOString()
-      // }
+      // Add date range if available
+      if (dateRange.from) {
+        params.startDate = dateRange.from.toISOString()
+      }
 
-      // if (dateRange.to) {
-      //   params.endDate = dateRange.to.toISOString()
-      // }
+      if (dateRange.to) {
+        params.endDate = dateRange.to.toISOString()
+      }
 
-      const response = await getDeploymentLogs(params)
-      setLogs(response.data)
-      setTotalLogs(response.data.length)
+      const response = await getDeployments(params)
+      setLogs(response.results)
+      setTotalLogs(response.total)
     } catch (error) {
       console.error("Error fetching logs:", error)
       toast({
@@ -140,23 +140,23 @@ export function DeploymentLogsDashboard() {
     <div className="flex flex-col h-full">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-lg font-semibold">Deployment Logs Dashboard</h1>
+          <h1 className="text-lg font-semibold">Deployments</h1>
           <div className="ml-auto flex items-center gap-4">
             <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleRefresh} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
-            <Button variant="outline" size="sm" className="h-8 gap-1">
+            {/* <Button variant="outline" size="sm" className="h-8 gap-1">
               <Download className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Export</span>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </header>
 
       <div className="container px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          {/* <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="grid gap-1">
               <h1 className="text-2xl font-bold tracking-tight">Deployment Logs</h1>
               <p className="text-muted-foreground">
@@ -164,14 +164,14 @@ export function DeploymentLogsDashboard() {
               </p>
             </div>
             <DateRangePicker onChange={handleDateRangeChange} />
-          </div>
+          </div> */}
 
           {/* <DeploymentLogStats /> */}
 
           <div className="grid gap-4">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex items-center gap-2">
-                <Select value={logType} onValueChange={handleTypeChange}>
+                {/* <Select value={logType} onValueChange={handleTypeChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Log Type" />
                   </SelectTrigger>
@@ -181,8 +181,8 @@ export function DeploymentLogsDashboard() {
                     <SelectItem value="APPLICATION_TEXT">Application Text</SelectItem>
                     <SelectItem value="APPLICATION_JSON">Application JSON</SelectItem>
                   </SelectContent>
-                </Select>
-                <Select value={severity} onValueChange={handleSeverityChange}>
+                </Select> */}
+                {/* <Select value={severity} onValueChange={handleSeverityChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Severity" />
                   </SelectTrigger>
@@ -193,13 +193,13 @@ export function DeploymentLogsDashboard() {
                     <SelectItem value="WARNING">Warning</SelectItem>
                     <SelectItem value="ERROR">Error</SelectItem>
                   </SelectContent>
-                </Select>
-                <Button variant="outline" size="icon" className="h-9 w-9">
+                </Select> */}
+                {/* <Button variant="outline" size="icon" className="h-9 w-9">
                   <SlidersHorizontal className="h-4 w-4" />
                   <span className="sr-only">More filters</span>
-                </Button>
+                </Button> */}
               </div>
-              <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
+              {/* <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
@@ -208,14 +208,14 @@ export function DeploymentLogsDashboard() {
                   className="w-full sm:w-[300px] pl-8"
                   defaultValue={searchQuery}
                 />
-              </form>
+              </form> */}
             </div>
 
             <Tabs defaultValue="table" className="w-full">
-              <TabsList>
+              {/* <TabsList>
                 <TabsTrigger value="table">Table View</TabsTrigger>
                 <TabsTrigger value="json">JSON View</TabsTrigger>
-              </TabsList>
+              </TabsList> */}
               <TabsContent value="table" className="mt-4">
                 {loading ? (
                   <div className="space-y-2">
@@ -225,8 +225,8 @@ export function DeploymentLogsDashboard() {
                     <Skeleton className="h-20 w-full" />
                   </div>
                 ) : (
-                  <DeploymentLogsTable
-                    logs={logs}
+                  <DeploymentsTable
+                    deployments={logs}
                     onSelectLog={setSelectedLog}
                     totalLogs={totalLogs}
                     currentPage={page}
@@ -252,7 +252,7 @@ export function DeploymentLogsDashboard() {
         </div>
       </div>
 
-      {selectedLog && <DeploymentLogDetails log={selectedLog} onClose={() => setSelectedLog(null)} />}
+      {/* {selectedLog && <DeploymentLogDetails log={selectedLog} onClose={() => setSelectedLog(null)} />} */}
     </div>
   )
 }
