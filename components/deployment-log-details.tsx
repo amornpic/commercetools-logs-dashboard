@@ -44,10 +44,7 @@ export function DeploymentLogDetails({ log, onClose }: DeploymentLogDetailsProps
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Deployment Log Details</span>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+            Deployment Log Details
           </DialogTitle>
         </DialogHeader>
 

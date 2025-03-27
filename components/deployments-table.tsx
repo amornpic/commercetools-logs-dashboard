@@ -32,22 +32,20 @@ import type { Deployment } from "@/lib/commercetools-api"
 
 interface DeploymentsTableProps {
   deployments: Deployment[]
-  onSelectLog: (log: Deployment) => void
-  totalLogs: number
-  currentPage: number
-  pageSize: number
 }
 
-export function DeploymentsTable({  deployments, onSelectLog, totalLogs, currentPage, pageSize }: DeploymentsTableProps) {
+export function DeploymentsTable({  deployments }: DeploymentsTableProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  const totalPages = Math.ceil(totalLogs / pageSize)
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams)
     params.set("page", page.toString())
     router.push(`?${params.toString()}`)
+  }
+
+  const handleSelectDeployment = (deployment: Deployment) => {
+    router.push(`/deployments/${deployment.key}`)
   }
 
   return (
@@ -56,21 +54,11 @@ export function DeploymentsTable({  deployments, onSelectLog, totalLogs, current
         <Table>
           <TableHeader>
             <TableRow>
-            <TableHead className="w-[100px]">
-ID
-              </TableHead>
-              <TableHead className="w-[100px]">
-                  Type
-              </TableHead>
-              <TableHead>
-                  key
-              </TableHead>
-              <TableHead>
-                  deployedRegion
-              </TableHead>
-              <TableHead className="w-[250px]">
-                  version
-              </TableHead>
+              <TableHead className="w-[300px]">ID</TableHead>
+              <TableHead>Key</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Version</TableHead>
+              <TableHead>Region</TableHead>
               <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -86,13 +74,13 @@ ID
                 <TableRow
                   key={`${deployment.id}-${index}`}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onSelectLog(deployment)}
+                  onClick={() => handleSelectDeployment(deployment)}
                 >
                   <TableCell>{deployment.id}</TableCell>
-                  <TableCell>{deployment.type}</TableCell>
                   <TableCell>{deployment.key}</TableCell>
-                  <TableCell>{deployment.deployedRegion}</TableCell>
+                  <TableCell>{deployment.type}</TableCell>
                   <TableCell>{deployment.version}</TableCell>
+                  <TableCell>{deployment.deployedRegion}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -105,7 +93,7 @@ ID
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation()
-                            onSelectLog(deployment)
+                            handleSelectDeployment(deployment)
                           }}
                         >
                           View Details

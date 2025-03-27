@@ -43,12 +43,60 @@ export interface DeploymentLog {
   }
 }
 
+export interface DeploymentApplication {
+  id: string
+  applicationName: string
+  schedule?: string
+  topic?: string
+  url?: string
+  standardConfiguration: any[]
+  securedConfiguration: any[]
+}
+
+export interface DeploymentDetails {
+  id: string
+  key: string
+  version: number
+  type: string
+  connector: {
+    id: string
+    key: string
+    version: number
+    name: string
+    description: string
+    creator: {
+      email: string
+    }
+    repository: {
+      url: string
+      tag: string
+    }
+    configurations: any[]
+    supportedRegions: string[]
+    certified: boolean
+  }
+  deployedRegion: string
+  applications: DeploymentApplication[]
+  details: {
+    build: {
+      id: string
+      report: any
+    }
+  }
+  preview: boolean
+  status: string
+}
+
 export interface DeploymentQueryParams {
   key?: string
 }
 
 export interface DeploymentLogQueryParams {
   key: string
+  applicationName?: string
+  pageToken?: string
+  startDate?: string
+  endDate?: string
 }
 
 export interface DeploymentLogResponse {
@@ -124,6 +172,9 @@ export async function fetchDeployments(params: DeploymentQueryParams = {}) {
     //   params.filter.forEach((filter) => queryParams.append("filter", filter))
     // }
 
+    console.log('params', params);
+    
+
     // if (params.startDate) queryParams.append("startDate", params.startDate)
     if (params.key) queryParams.append("key", params.key)
 
@@ -145,7 +196,10 @@ export async function fetchDeployments(params: DeploymentQueryParams = {}) {
       throw new Error(`API request failed: ${response.statusText}`)
     }
 
-    return await response.json()
+    const data = await response.json()
+    // console.log('data', data);
+    
+    return data
   } catch (error) {
     console.error("Error fetching deployment logs:", error)
 
@@ -167,25 +221,14 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Pro
     // Build query parameters
     const queryParams = new URLSearchParams()
 
-    // if (params.limit) queryParams.append("limit", params.limit.toString())
-    // if (params.offset) queryParams.append("offset", params.offset.toString())
+    if (params.applicationName) queryParams.append("applicationName", params.applicationName)
+    if (params.startDate) queryParams.append("startDate", params.startDate)
+    if (params.endDate) queryParams.append("endDate", params.endDate)
 
-    // if (params.sort && params.sort.length > 0) {
-    //   params.sort.forEach((sort) => queryParams.append("sort", sort))
-    // }
-
-    // if (params.filter && params.filter.length > 0) {
-    //   params.filter.forEach((filter) => queryParams.append("filter", filter))
-    // }
-
-    // if (params.startDate) queryParams.append("startDate", params.startDate)
-    // if (params.key) queryParams.append("endDate", params.key)
-
-    // https://connect.{{region}}.commercetools.com/{{project-key}}/deployments/5b4ddcbb-f97a-40f1-a22a-5bd67907efa0/logs?applicationName=inventory-movement
     console.log('params', params);
     
     // Make the API request
-    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs`
+    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs?${queryParams.toString()}`
     console.log('url', url);
     
     const response = await fetch(url, {
@@ -201,7 +244,7 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Pro
     }
 
     const data = await response.json()
-    console.log('data', data);
+    // console.log('data', data);
     
 
     return data

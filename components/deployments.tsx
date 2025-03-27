@@ -23,10 +23,9 @@ import type { DeploymentLog, DeploymentLogQueryParams, Deployment } from "@/lib/
 import { DeploymentsTable } from "./deployments-table"
 
 export function Deployments() {
-  const [selectedLog, setSelectedLog] = useState<Deployment | null>(null)
   const [loading, setLoading] = useState(true)
-  const [logs, setLogs] = useState<DeploymentLog[]>([])
-  const [totalLogs, setTotalLogs] = useState(0)
+  const [deployments, setDeployments] = useState<Deployment[]>([])
+  const [totalDeployments, setTotalDeployments] = useState(0)
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({})
 
   const searchParams = useSearchParams()
@@ -63,26 +62,26 @@ export function Deployments() {
         filters.push(`details.message="${searchQuery}*"`)
       }
 
-      if (filters.length > 0) {
-        params.filter = filters
-      }
+      // if (filters.length > 0) {
+      //   params.filter = filters
+      // }
 
-      // Add date range if available
-      if (dateRange.from) {
-        params.startDate = dateRange.from.toISOString()
-      }
+      // // Add date range if available
+      // if (dateRange.from) {
+      //   params.startDate = dateRange.from.toISOString()
+      // }
 
-      if (dateRange.to) {
-        params.endDate = dateRange.to.toISOString()
-      }
+      // if (dateRange.to) {
+      //   params.endDate = dateRange.to.toISOString()
+      // }
 
       const response = await getDeployments(params)
-      setLogs(response.results)
-      setTotalLogs(response.total)
+      setDeployments(response.results)
+      setTotalDeployments(response.total)
     } catch (error) {
-      console.error("Error fetching logs:", error)
+      console.error("Error fetching deployments:", error)
       toast({
-        title: "Error fetching logs",
+        title: "Error fetching deployments",
         description: "There was a problem fetching the deployment logs. Please try again.",
         variant: "destructive",
       })
@@ -90,10 +89,6 @@ export function Deployments() {
       setLoading(false)
     }
   }, [logType, severity, searchQuery, page, limit, dateRange])
-
-  useEffect(() => {
-    console.log(logs)
-  }, [logs])
 
   useEffect(() => {
     fetchLogs()
@@ -226,11 +221,7 @@ export function Deployments() {
                   </div>
                 ) : (
                   <DeploymentsTable
-                    deployments={logs}
-                    onSelectLog={setSelectedLog}
-                    totalLogs={totalLogs}
-                    currentPage={page}
-                    pageSize={limit}
+                    deployments={deployments}
                   />
                 )}
               </TabsContent>
@@ -241,7 +232,7 @@ export function Deployments() {
                       <Skeleton className="h-[500px] w-full" />
                     ) : (
                       <pre className="bg-muted p-4 rounded-md overflow-auto max-h-[500px]">
-                        {JSON.stringify(logs, null, 2)}
+                        {JSON.stringify(deployments, null, 2)}
                       </pre>
                     )}
                   </CardContent>

@@ -36,9 +36,10 @@ interface DeploymentLogsTableProps {
   totalLogs: number
   currentPage: number
   pageSize: number
+  hideApplicationColumn?: boolean
 }
 
-export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize }: DeploymentLogsTableProps) {
+export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false }: DeploymentLogsTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof DeploymentLog>("timestamp")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
 
@@ -67,12 +68,12 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
       hour12: false,
     }).format(date)
   }
@@ -141,7 +142,7 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">
+              <TableHead className="w-[200px]">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("type")}
@@ -152,17 +153,19 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
                     (sortDirection === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                 </Button>
               </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("applicationName")}
-                  className="flex items-center gap-1 font-medium"
-                >
-                  Application
-                  {sortColumn === "applicationName" &&
-                    (sortDirection === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
-                </Button>
-              </TableHead>
+              {!hideApplicationColumn && (
+                <TableHead className="w-[200px]">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("applicationName")}
+                    className="flex items-center gap-1 font-medium"
+                  >
+                    Application
+                    {sortColumn === "applicationName" &&
+                      (sortDirection === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                  </Button>
+                </TableHead>
+              )}
               <TableHead>
                 <Button
                   variant="ghost"
@@ -174,7 +177,7 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
                     (sortDirection === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                 </Button>
               </TableHead>
-              <TableHead className="w-[250px]">
+              <TableHead>
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("timestamp")}
@@ -185,8 +188,8 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
                     (sortDirection === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                 </Button>
               </TableHead>
-              <TableHead className="w-[300px]">Message</TableHead>
-              <TableHead className="w-[80px]">Actions</TableHead>
+              <TableHead>Message</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -209,9 +212,9 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
                       <span className="hidden sm:inline text-xs">{log.type.replace("_", " ")}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{log.applicationName}</TableCell>
+                  {!hideApplicationColumn && <TableCell>{log.applicationName}</TableCell>}
                   <TableCell>{getSeverityBadge(log.severity)}</TableCell>
-                  {/* <TableCell>{formatDate(log.timestamp)}</TableCell> */}
+                  <TableCell>{formatDate(log.timestamp)}</TableCell>
                   <TableCell className="font-mono text-xs truncate max-w-[300px]">
                     {getMessagePreview(log.details)}
                   </TableCell>
@@ -231,22 +234,6 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
                           }}
                         >
                           View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigator.clipboard.writeText(JSON.stringify(log, null, 2))
-                          }}
-                        >
-                          Copy as JSON
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigator.clipboard.writeText(log.deploymentId)
-                          }}
-                        >
-                          Copy Deployment ID
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
