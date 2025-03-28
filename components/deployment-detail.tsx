@@ -1,17 +1,13 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import {
-  AlertTriangle,
-  ArrowLeft,
   Calendar,
   CheckCircle,
   Clock,
   Code,
   Copy,
   ExternalLink,
-  FileText,
   Globe,
   Info,
   Tag,
@@ -22,10 +18,9 @@ import type { DeploymentDetails, DeploymentApplication } from "@/lib/commercetoo
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { toast } from "@/components/ui/use-toast"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
 
 interface DeploymentDetailProps {
   deployment: DeploymentDetails
@@ -313,28 +308,58 @@ export function DeploymentDetail({ deployment }: DeploymentDetailProps) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <p className="text-sm font-medium text-muted-foreground mb-2">Standard Configuration</p>
-                              {app.standardConfiguration.length > 0 ? (
-                                <div className="bg-muted rounded-md p-2">
-                                  <pre className="text-xs font-mono overflow-auto max-h-[200px]">
-                                    {JSON.stringify(app.standardConfiguration, null, 2)}
-                                  </pre>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground">No standard configuration</p>
-                              )}
+                              <Table >
+                                <TableHeader>
+                                  <TableRow className="h-4">
+                                    <TableHead>Key</TableHead>
+                                    <TableHead>Value</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody className="overflow-auto max-h-[200px]">
+                                  {app.standardConfiguration.length > 0 ? (
+                                    app.standardConfiguration.map((config) => (
+                                      <TableRow key={config.key} className="text-sm">
+                                        <TableCell>{config.key}</TableCell>
+                                        <TableCell>{config.value}</TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell className="h-24 text-center">
+                                      No standard configuration
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
                             </div>
 
                             <div>
                               <p className="text-sm font-medium text-muted-foreground mb-2">Secured Configuration</p>
-                              {app.securedConfiguration.length > 0 ? (
-                                <div className="bg-muted rounded-md p-2">
-                                  <pre className="text-xs font-mono overflow-auto max-h-[200px]">
-                                    {JSON.stringify(app.securedConfiguration, null, 2)}
-                                  </pre>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground">No secured configuration</p>
-                              )}
+                              <Table >
+                                <TableHeader>
+                                  <TableRow className="h-4">
+                                    <TableHead>Key</TableHead>
+                                    <TableHead>Value</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody className="overflow-auto max-h-[200px]">
+                                  {app.securedConfiguration.length > 0 ? (
+                                    app.securedConfiguration.map((config) => (
+                                      <TableRow key={config.key} className="text-sm">
+                                        <TableCell>{config.key}</TableCell>
+                                        <TableCell>{config.value}</TableCell>
+                                      </TableRow>
+                                    ))
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell className="h-24 text-center">
+                                      No secured configuration
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
                             </div>
                           </div>
                         </div>

@@ -11,10 +11,12 @@ interface DeploymentDetailPageProps {
 }
 
 export default async function DeploymentDetailPage({ params }: DeploymentDetailPageProps) {
+  const {key} = await params
+
   return (
     <main className="min-h-screen bg-background">
       <Suspense fallback={<DeploymentDetailSkeleton />}>
-        <DeploymentDetailView deploymentKey={params.key} />
+        <DeploymentDetailView deploymentKey={key} />
       </Suspense>
     </main>
   )

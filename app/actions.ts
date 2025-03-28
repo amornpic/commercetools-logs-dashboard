@@ -2,7 +2,6 @@
 
 import {
   fetchDeploymentLogs,
-  fetchDeploymentLogById,
   fetchDeploymentLogStats,
   type DeploymentLogQueryParams,
   fetchDeployments,
@@ -17,9 +16,6 @@ export async function getDeploymentLogs(params: DeploymentLogQueryParams) {
   return fetchDeploymentLogs(params)
 }
 
-export async function getDeploymentLogById(deploymentId: string, logId: string) {
-  return fetchDeploymentLogById(deploymentId, logId)
-}
 
 export async function getDeploymentLogStats() {
   return fetchDeploymentLogStats()

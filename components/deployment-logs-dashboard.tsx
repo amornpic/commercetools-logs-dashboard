@@ -13,20 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DeploymentLogsTable } from "@/components/deployment-logs-table"
 import { DeploymentLogDetails } from "@/components/deployment-log-details"
-import { DeploymentLogStats } from "@/components/deployment-log-stats"
 import { DateRangePicker } from "@/components/date-range-picker"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
-import { getDeploymentLogs } from "@/app/actions"
-import type { DeploymentLog as DeploymentLogType, DeploymentLogQueryParams } from "@/lib/commercetools-api"
+import type { DeploymentLog, DeploymentLogQueryParams } from "@/lib/commercetools-api"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
 import { Badge } from "./ui/badge"
-import { formatDate } from "date-fns"
-import { ScrollArea } from "./ui/scroll-area"
-
-export type DeploymentLog = DeploymentLogType
+import { useDeploymentLogs, useNextDeploymentLogs, useRefreshLogs } from "@/hooks/use-deployment-logs"
 
 interface DeploymentLogsDashboardProps {
   deploymentKey: string 
@@ -35,9 +29,6 @@ interface DeploymentLogsDashboardProps {
 // Update the component props to include initialDeploymentId
 export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboardProps) {
   const [selectedLog, setSelectedLog] = useState<DeploymentLog | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [logs, setLogs] = useState<DeploymentLog[]>([])
-  const [totalLogs, setTotalLogs] = useState(0)
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({})
 
   const searchParams = useSearchParams()
@@ -48,51 +39,57 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
   const severity = searchParams.get("severity") || "all"
   const searchQuery = searchParams.get("q") || ""
   const page = Number.parseInt(searchParams.get("page") || "1", 10)
-  const limit = Number.parseInt(searchParams.get("limit") || "20", 10)
+  const limit = Number.parseInt(searchParams.get("limit") || "50", 10)
   const [groupByApplication, setGroupByApplication] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
 
-  // Update the fetchLogs function to handle errors better
-  const fetchLogs = useCallback(async () => {
-    setLoading(true)
-
-    try {
+    const queryParams = useMemo(() => {
       const params: DeploymentLogQueryParams = {
         key: deploymentKey,
       }
-
+  
       // Add date range if available
       if (dateRange.from) {
         params.startDate = dateRange.from.toISOString()
       }
-
+  
       if (dateRange.to) {
         params.endDate = dateRange.to.toISOString()
       }
 
-      if (applicationName && applicationName !== "all") {
+      if (applicationName !== "all") {
         params.applicationName = applicationName
       }
+  
+      return params
+    }, [applicationName, dateRange])
+  
+    const { data, isLoading, isError, error } = useDeploymentLogs(queryParams)
 
-      const response = await getDeploymentLogs(params)
+    const { mutate: refreshLogs, isPending: isRefreshing } = useRefreshLogs()
 
-      setLogs(response.data)
-      // setTotalLogs(response.total)
-    } catch (error) {
-      console.error("Error fetching logs:", error)
-      toast({
-        title: "Error fetching logs",
-        description: error.message || "There was a problem fetching the deployment logs. Please try again.",
-        variant: "destructive",
-      })
+    const { mutate: fetchNextPage, isPending: isLoadingMore } = useNextDeploymentLogs()
 
-      // Set empty logs to prevent UI errors
-      setLogs([])
-      setTotalLogs(0)
-    } finally {
-      setLoading(false)
+    const loading = isLoading || isRefreshing
+
+    const handleLoadMore = () => {
+      if (nextCursor) {
+        fetchNextPage({ params: queryParams, pageToken: nextCursor })
+      }
     }
-  }, [applicationName, dateRange, searchParams])
+  
+    // Extract logs and next cursor from query data
+    const logs = data?.data || data?.results || []
+    const totalLogs = data?.total || logs.length
+  
+    useEffect(() => {
+      if (data?.next) {
+        setNextCursor(data.next)
+      } else {
+        setNextCursor(undefined)
+      }
+    }, [data])
 
   const filterLogs = useMemo(() => {
     return logs.filter(log => {
@@ -103,17 +100,6 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
     })
   }, [logs, logType, severity, searchQuery])
 
-  // Add this to the useEffect dependencies
-  useEffect(() => {
-    // if (initialDeploymentId && !searchParams.get("deploymentId")) {
-    //   const params = new URLSearchParams(searchParams)
-    //   params.set("deploymentId", initialDeploymentId)
-    //   router.push(`?${params.toString()}`)
-    // } else {
-      fetchLogs()
-    // }
-  }, [fetchLogs, deploymentKey])
-
     // Get unique application names from logs for the filter
     const applicationNames = useMemo(() => {
       const names = new Set<string>()
@@ -123,9 +109,9 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
   
     // Group logs by application name
     const groupedLogs = useMemo(() => {
-      if (!groupByApplication) return { all: filterLogs }
+      if (!groupByApplication) return { all: logs }
   
-      return filterLogs.reduce(
+      return logs.reduce(
         (groups, log) => {
           const appName = log.applicationName
           if (!groups[appName]) {
@@ -136,7 +122,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
         },
         {} as Record<string, DeploymentLog[]>,
       )
-    }, [filterLogs, groupByApplication])
+    }, [logs, groupByApplication])
 
     useEffect(() => {
       console.log(groupedLogs)
@@ -179,7 +165,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
   }
 
   const handleRefresh = () => {
-    fetchLogs()
+    refreshLogs(queryParams)
     toast({
       title: "Refreshed",
       description: "Deployment logs have been refreshed.",
@@ -195,6 +181,18 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
 
   const toggleGrouping = () => {
     setGroupByApplication((prev) => !prev)
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col h-full">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error loading logs</AlertTitle>
+          <AlertDescription>{error instanceof Error ? error.message : "An unknown error occurred"}</AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (
@@ -221,8 +219,6 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <DateRangePicker onChange={handleDateRangeChange} />
           </div>
-
-          {/* <DeploymentLogStats /> */}
 
           <div className="grid gap-4">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -276,10 +272,6 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                 <Button variant="outline" size="sm" className="h-9 gap-1" onClick={toggleGrouping}>
                   {groupByApplication ? "Ungroup" : "Group by App"}
                 </Button>
-                {/* <Button variant="outline" size="icon" className="h-9 w-9">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <span className="sr-only">More filters</span>
-                </Button> */}
               </div>
               
             </div>
@@ -313,7 +305,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{appName}</span>
                             <Badge variant="outline" className="ml-2">
-                              {appLogs.length} logs
+                              {logs.length} logs
                             </Badge>
                           </div>
                           {expandedGroups[appName] ? (
@@ -338,12 +330,14 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                 </div>
               ) : (
                 <DeploymentLogsTable
-                  logs={filterLogs}
+                  logs={logs}
                   onSelectLog={setSelectedLog}
                   totalLogs={totalLogs}
                   currentPage={page}
                   pageSize={limit}
                   hideApplicationColumn={false}
+                  nextCursor={nextCursor}
+                  onLoadMore={handleLoadMore}
                 />
               )}
               

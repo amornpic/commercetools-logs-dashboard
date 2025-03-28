@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   AlertCircle,
   AlertTriangle,
@@ -37,9 +37,11 @@ interface DeploymentLogsTableProps {
   currentPage: number
   pageSize: number
   hideApplicationColumn?: boolean
+  nextCursor?: string
+  onLoadMore?: () => void
 }
 
-export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false }: DeploymentLogsTableProps) {
+export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false, nextCursor, onLoadMore }: DeploymentLogsTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof DeploymentLog>("timestamp")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
 
@@ -55,8 +57,6 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
       setSortColumn(column)
       setSortDirection("desc")
     }
-
-    // In a real app, you would update the URL and refetch with the new sort
   }
 
   const handlePageChange = (page: number) => {
@@ -244,6 +244,15 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
           </TableBody>
         </Table>
       </div>
+
+      {!hideApplicationColumn && nextCursor && (
+        <div className="flex justify-center mt-4">
+          <Button onClick={onLoadMore} variant="outline" className="gap-2">
+            Load More
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {totalPages > 1 && (
         <Pagination>

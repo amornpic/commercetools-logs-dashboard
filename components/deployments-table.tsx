@@ -54,11 +54,11 @@ export function DeploymentsTable({  deployments }: DeploymentsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[300px]">ID</TableHead>
+              <TableHead>ID</TableHead>
               <TableHead>Key</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Version</TableHead>
-              <TableHead>Region</TableHead>
+              {/* <TableHead>Region</TableHead> */}
               <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -80,7 +80,7 @@ export function DeploymentsTable({  deployments }: DeploymentsTableProps) {
                   <TableCell>{deployment.key}</TableCell>
                   <TableCell>{deployment.type}</TableCell>
                   <TableCell>{deployment.version}</TableCell>
-                  <TableCell>{deployment.deployedRegion}</TableCell>
+                  {/* <TableCell>{deployment.deployedRegion}</TableCell> */}
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
