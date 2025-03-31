@@ -1,6 +1,4 @@
 import { Suspense } from "react"
-import { notFound } from "next/navigation"
-import { getDeployments } from "@/app/actions"
 import { DeploymentDetail } from "@/components/deployment-detail"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -16,32 +14,10 @@ export default async function DeploymentDetailPage({ params }: DeploymentDetailP
   return (
     <main className="min-h-screen bg-background">
       <Suspense fallback={<DeploymentDetailSkeleton />}>
-        <DeploymentDetailView deploymentKey={key} />
+        <DeploymentDetail deploymentKey={key} />
       </Suspense>
     </main>
   )
-}
-
-async function DeploymentDetailView({ deploymentKey }: { deploymentKey: string }) {
-  try {
-    const deployment = await getDeployments({ key: deploymentKey })
-
-    if (!deployment) {
-      notFound()
-    }
-
-    return <DeploymentDetail deployment={deployment} />
-  } catch (error) {
-    console.error("Error loading deployment:", error)
-    return (
-      <div className="container py-10">
-        <div className="bg-destructive/15 text-destructive p-4 rounded-md">
-          <h2 className="text-lg font-semibold">Error loading deployment</h2>
-          <p>There was a problem loading the deployment details: {error.message || "Unknown error"}</p>
-        </div>
-      </div>
-    )
-  }
 }
 
 function DeploymentDetailSkeleton() {

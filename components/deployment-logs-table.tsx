@@ -11,6 +11,7 @@ import {
   Code,
   FileText,
   Globe,
+  RefreshCw,
 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -29,6 +30,8 @@ import {
 } from "@/components/ui/pagination"
 
 import type { DeploymentLog } from "@/lib/commercetools-api"
+import { SeverityBadge } from "./ui/severity-badge"
+import dayjs from "dayjs"
 
 interface DeploymentLogsTableProps {
   logs: DeploymentLog[]
@@ -39,9 +42,10 @@ interface DeploymentLogsTableProps {
   hideApplicationColumn?: boolean
   nextCursor?: string
   onLoadMore?: () => void
+  isLoadingMore?: boolean
 }
 
-export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false, nextCursor, onLoadMore }: DeploymentLogsTableProps) {
+export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false, nextCursor, onLoadMore, isLoadingMore }: DeploymentLogsTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof DeploymentLog>("timestamp")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
 
@@ -66,16 +70,7 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat("en-US", {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date)
+    return dayjs(dateString).format('DD/MM/YY HH:mm:ss')
   }
 
   const getTypeIcon = (type: string) => {
@@ -88,38 +83,6 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
         return <Code className="h-4 w-4" />
       default:
         return null
-    }
-  }
-
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case "ERROR":
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Error
-          </Badge>
-        )
-      case "WARNING":
-        return (
-          <Badge variant="warning" className="gap-1 bg-yellow-500 hover:bg-yellow-600">
-            <AlertTriangle className="h-3 w-3" />
-            Warning
-          </Badge>
-        )
-      case "INFO":
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <CheckCircle className="h-3 w-3" />
-            Info
-          </Badge>
-        )
-      default:
-        return (
-          <Badge variant="outline" className="gap-1">
-            Default
-          </Badge>
-        )
     }
   }
 
@@ -213,7 +176,7 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
                     </div>
                   </TableCell>
                   {!hideApplicationColumn && <TableCell>{log.applicationName}</TableCell>}
-                  <TableCell>{getSeverityBadge(log.severity)}</TableCell>
+                  <TableCell><SeverityBadge severity={log.severity} /></TableCell>
                   <TableCell>{formatDate(log.timestamp)}</TableCell>
                   <TableCell className="font-mono text-xs truncate max-w-[300px]">
                     {getMessagePreview(log.details)}
@@ -247,10 +210,19 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
 
       {!hideApplicationColumn && nextCursor && (
         <div className="flex justify-center mt-4">
-          <Button onClick={onLoadMore} variant="outline" className="gap-2">
-            Load More
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="sm" onClick={onLoadMore} disabled={isLoadingMore} className="gap-1">
+          {isLoadingMore ? (
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              Load More
+              <ChevronDown className="h-4 w-4" />
+            </>
+          )}
+        </Button>
         </div>
       )}
 

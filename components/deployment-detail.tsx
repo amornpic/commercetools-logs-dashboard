@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import {
+  AlertTriangle,
   Calendar,
   CheckCircle,
   Clock,
@@ -10,23 +11,46 @@ import {
   ExternalLink,
   Globe,
   Info,
+  RefreshCw,
   Tag,
   Terminal,
   XCircle,
 } from "lucide-react"
-import type { DeploymentDetails, DeploymentApplication } from "@/lib/commercetools-api"
+import type { DeploymentApplication, DeploymentQueryParams, Deployment } from "@/lib/commercetools-api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { toast } from "@/components/ui/use-toast"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
+import { useDeploymentDetails } from "@/hooks/use-deployment-logs"
+import { useEffect, useMemo, useState } from "react"
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
+import { Skeleton } from "./ui/skeleton"
 
 interface DeploymentDetailProps {
-  deployment: DeploymentDetails
+  deploymentKey: string
 }
 
-export function DeploymentDetail({ deployment }: DeploymentDetailProps) {
+export function DeploymentDetail({ deploymentKey }: DeploymentDetailProps) {
+  const [deployment, setDeployment] = useState<Deployment>()
+
+  const queryParams = useMemo(() => {
+    const params: DeploymentQueryParams = {
+      key: deploymentKey,
+    }
+
+    return params
+  }, [deploymentKey])
+
+  const { data, isLoading, isError, error, refetch, isFetching } = useDeploymentDetails(queryParams)
+
+  useEffect(() => {
+    if (data) {
+      setDeployment(data)
+    }
+  }, [data])
+
   const copyToClipboard = (text: string, message: string) => {
     navigator.clipboard.writeText(text)
     toast({
@@ -81,6 +105,43 @@ export function DeploymentDetail({ deployment }: DeploymentDetailProps) {
     return "Application"
   }
 
+  if (isError) {
+    return (
+      <div className="flex flex-col h-full">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error loading deployment</AlertTitle>
+          <AlertDescription>{error instanceof Error ? error.message : "An unknown error occurred"}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  if (!deployment || isLoading || isFetching) {
+    return (
+      <div className="container py-6">
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-1/3" />
+            <Skeleton className="h-4 w-1/4" />
+          </div>
+  
+          <div className="grid gap-6 md:grid-cols-2">
+            <Skeleton className="h-[200px] w-full" />
+            <Skeleton className="h-[200px] w-full" />
+          </div>
+  
+          <Skeleton className="h-[300px] w-full" />
+  
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-[200px] w-full" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container py-6">
       <div className="space-y-6">
@@ -98,9 +159,15 @@ export function DeploymentDetail({ deployment }: DeploymentDetailProps) {
             </div>
             <p className="text-muted-foreground">{deployment.connector.description}</p>
           </div>
-          <Button asChild>
-            <Link href={`/deployments/${deployment.key}/logs`}>View Logs</Link>
-          </Button>
+          <div className="ml-auto flex items-center gap-4">
+            <Button asChild size="sm" className="h-8 gap-1">
+              <Link href={`/deployments/${deployment.key}/logs`}>View Logs</Link>
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 gap-1" onClick={() =>refetch()} disabled={isLoading || isFetching}>
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading || isFetching ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -292,6 +359,7 @@ export function DeploymentDetail({ deployment }: DeploymentDetailProps) {
                               <p className="text-sm font-medium text-muted-foreground">Schedule (Cron)</p>
                               <div className="flex items-center gap-2">
                                 <p className="font-mono text-xs">{app.schedule}</p>
+                                
                                 <Button
                                   variant="ghost"
                                   size="icon"

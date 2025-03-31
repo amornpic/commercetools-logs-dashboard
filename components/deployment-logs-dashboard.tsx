@@ -322,6 +322,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                             currentPage={1}
                             pageSize={appLogs.length}
                             hideApplicationColumn={true}
+                            isLoadingMore={isLoadingMore}
                           />
                         </CollapsibleContent>
                       </Collapsible>
@@ -338,6 +339,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                   hideApplicationColumn={false}
                   nextCursor={nextCursor}
                   onLoadMore={handleLoadMore}
+                  isLoadingMore={isLoadingMore}
                 />
               )}
               

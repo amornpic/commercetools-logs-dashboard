@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { RefreshCw, Search } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
 
@@ -10,47 +10,32 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
 
-import { getDeployments } from "@/app/actions"
 import type { Deployment, DeploymentQueryParams } from "@/lib/commercetools-api"
 import { DeploymentsTable } from "./deployments-table"
 import { Input } from "./ui/input"
+import { useDeployments } from "@/hooks/use-deployment-logs"
 
 export function Deployments() {
-  const [loading, setLoading] = useState(true)
   const [deployments, setDeployments] = useState<Deployment[]>([])
-  const [totalDeployments, setTotalDeployments] = useState(0)
-
   const searchParams = useSearchParams()
   const router = useRouter()
-
   const limit = Number.parseInt(searchParams.get("limit") || "100", 10)
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true)
-
-    try {
-      const params: DeploymentQueryParams = {
-        limit: limit,
-      }
-
-      const response = await getDeployments(params)
-      setDeployments(response.results)
-      setTotalDeployments(response.total)
-    } catch (error) {
-      console.error("Error fetching deployments:", error)
-      toast({
-        title: "Error fetching deployments",
-        description: "There was a problem fetching the deployment logs. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
+  const queryParams = useMemo(() => {
+    const params: DeploymentQueryParams = {
+      limit: limit,
     }
+
+    return params
   }, [limit])
 
+  const { data, isLoading, isError, error, refetch, isFetching } = useDeployments(queryParams)
+
   useEffect(() => {
-    fetchLogs()
-  }, [fetchLogs])
+    if (data) {
+      setDeployments(data.results)
+    }
+  }, [data])
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -63,9 +48,8 @@ export function Deployments() {
     router.push(`?${params.toString()}`)
   }
 
-
   const handleRefresh = () => {
-    fetchLogs()
+    refetch()
     toast({
       title: "Refreshed",
       description: "Deployment logs have been refreshed.",
@@ -76,10 +60,10 @@ export function Deployments() {
     <div className="flex flex-col h-full">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-lg font-semibold">Deployments ({totalDeployments})</h1>
+          <h1 className="text-lg font-semibold">Deployments ({data?.total})</h1>
           <div className="ml-auto flex items-center gap-4">
-            <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleRefresh} disabled={isLoading || isFetching}>
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading || isFetching ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
@@ -103,7 +87,7 @@ export function Deployments() {
                 </form> */}
               </div>
             </div>
-            {loading ? (
+            {isLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-20 w-full" />

@@ -1,11 +1,11 @@
 "use client"
 
-import { X } from "lucide-react"
-import type { DeploymentLog } from "@/components/deployment-logs-dashboard"
-import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { SeverityBadge } from "./ui/severity-badge"
+import dayjs from "dayjs"
+import { DeploymentLog } from "@/lib/commercetools-api"
 
 interface DeploymentLogDetailsProps {
   log: DeploymentLog
@@ -14,28 +14,23 @@ interface DeploymentLogDetailsProps {
 
 export function DeploymentLogDetails({ log, onClose }: DeploymentLogDetailsProps) {
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }).format(date)
+    return dayjs(dateString).format('DD/MM/YY HH:mm:ss')
   }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "ERROR":
-        return "text-red-500"
-      case "WARNING":
-        return "text-yellow-500"
-      case "INFO":
-        return "text-blue-500"
-      default:
-        return "text-gray-500"
+  function formatJson(jsonString: any): string {
+    try {
+      if (typeof jsonString === "string") {
+        // Check if input is a valid JSON string
+        const parsedJson = JSON.parse(jsonString);
+        return JSON.stringify(parsedJson, null, 2); // Format JSON
+      } else if (typeof jsonString === "object" && jsonString !== null) {
+        // Already a JSON object
+        return JSON.stringify(jsonString, null, 2); // Format JSON
+      } else {
+        return String(jsonString); // Convert plain string or other types to string
+      }
+    } catch (error) {
+      return jsonString; // Return original input if JSON parsing fails
     }
   }
 
@@ -64,7 +59,7 @@ export function DeploymentLogDetails({ log, onClose }: DeploymentLogDetailsProps
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Severity</h3>
-              <Badge className={getSeverityColor(log.severity)}>{log.severity}</Badge>
+              <SeverityBadge severity={log.severity} />
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground">Timestamp</h3>
@@ -81,41 +76,56 @@ export function DeploymentLogDetails({ log, onClose }: DeploymentLogDetailsProps
               </TabsList>
               <TabsContent value="formatted" className="mt-2">
                 <div className="bg-muted rounded-md p-4">
-                  {log.type === "HTTP_REQUEST" && log.details.method && (
-                    <div className="grid gap-2">
+                  {log.type === "HTTP_REQUEST" && log.details.requestMethod && (
+                    <div className="grid gap-2 text-xs">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <span className="text-xs text-muted-foreground">Method:</span>
-                          <p className="font-mono">{log.details.method}</p>
+                          <p className="font-mono">{log.details.requestMethod}</p>
                         </div>
                         <div>
                           <span className="text-xs text-muted-foreground">Status Code:</span>
-                          <p className="font-mono">{log.details.statusCode}</p>
+                          <p className="font-mono">{log.details.status}</p>
                         </div>
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground">Path:</span>
-                        <p className="font-mono">{log.details.path}</p>
+                        <p className="font-mono">{log.details.requestUrl}</p>
                       </div>
-                      {log.details.duration && (
+                      <div>
+                        <span className="text-xs text-muted-foreground">User Agent:</span>
+                        <p className="font-mono">{log.details.userAgent}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <span className="text-xs text-muted-foreground">Duration:</span>
-                          <p className="font-mono">{log.details.duration}ms</p>
+                          <span className="text-xs text-muted-foreground">Remote IP:</span>
+                          <p className="font-mono">{log.details.remoteIp}</p>
                         </div>
-                      )}
-                      {log.details.message && (
                         <div>
-                          <span className="text-xs text-muted-foreground">Message:</span>
-                          <p className="font-mono">{log.details.message}</p>
+                          <span className="text-xs text-muted-foreground">Server IP:</span>
+                          <p className="font-mono">{log.details.serverIp}</p>
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
 
-                  {log.details.message && log.type !== "HTTP_REQUEST" && (
+                  {log.details.message && log.type !== "HTTP_REQUEST" && log.type !== "APPLICATION_JSON" && (
                     <div>
                       <p className="font-mono whitespace-pre-wrap">{log.details.message}</p>
                     </div>
+                  )}
+
+                  {log.details.payload && log.type !== "HTTP_REQUEST" && (
+                    <>
+                      {Object.entries(log.details.payload).map(([key, value]) => (
+                        <div key={key}>
+                          <span className="text-xs text-muted-foreground">{key}:</span>
+                          <p className="text-xs font-mono whitespace-pre-wrap">
+                            {formatJson(value)}
+                          </p>
+                        </div>
+                      ))}
+                    </>
                   )}
 
                   {!log.details.message && log.type !== "HTTP_REQUEST" && (
