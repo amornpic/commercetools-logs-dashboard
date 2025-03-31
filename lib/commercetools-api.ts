@@ -107,12 +107,12 @@ export interface DeploymentLogResponse {
 }
 
 // Configuration
-const API_URL = process.env.CTP_API_URL || "https://api.europe-west1.gcp.commercetools.com"
-const PROJECT_KEY = process.env.CTP_PROJECT_KEY || "your-project-key"
-const CLIENT_ID = process.env.CTP_CLIENT_ID
-const CLIENT_SECRET = process.env.CTP_CLIENT_SECRET
-const SCOPES = process.env.CTP_SCOPES || "manage_project:your-project-key"
-const CTP_REGION = process.env.CTP_REGION
+const API_URL = process.env.CT_API_URL || "https://api.europe-west1.gcp.commercetools.com"
+const PROJECT_KEY = process.env.CT_PROJECT_KEY || "your-project-key"
+const CLIENT_ID = process.env.CT_CLIENT_ID
+const CLIENT_SECRET = process.env.CT_CLIENT_SECRET
+const SCOPES = process.env.CT_SCOPES || "manage_project:your-project-key"
+const CT_REGION = process.env.CT_REGION
 
 // Authentication
 let tokenCache: {
@@ -168,7 +168,7 @@ export async function fetchDeployments(params: DeploymentQueryParams = {}): Prom
     if (params.key) queryParams.append("key", params.key)
 
     // Make the API request
-    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments/${queryParams.toString()}?limit=${params.limit}`
+    const url = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}/deployments/${queryParams.toString()}?limit=${params.limit}`
     console.log('url', url);
     
     const response = await fetch(url, {
@@ -216,7 +216,7 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Pro
     console.log('params', params);
     
     // Make the API request
-    const url = `https://connect.${CTP_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs?${queryParams.toString()}`
+    const url = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs?${queryParams.toString()}`
     console.log('url', url);
     
     const response = await fetch(url, {
