@@ -17,10 +17,10 @@ import { DateRangePicker } from "@/components/date-range-picker"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import type { DeploymentLog, DeploymentLogQueryParams } from "@/lib/commercetools-api"
+import type { DeploymentApplication, DeploymentLog, DeploymentLogQueryParams } from "@/lib/commercetools-api"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
 import { Badge } from "./ui/badge"
-import { useDeploymentLogs, useNextDeploymentLogs, useRefreshLogs } from "@/hooks/use-deployment-logs"
+import { useDeploymentDetails, useDeploymentLogs, useNextDeploymentLogs, useRefreshLogs } from "@/hooks/use-deployment-logs"
 
 interface DeploymentLogsDashboardProps {
   deploymentKey: string 
@@ -43,6 +43,23 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
   const [groupByApplication, setGroupByApplication] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
+  const [applications, setApplications] = useState<DeploymentApplication[]>([])
+
+  const queryParamsDeployment = useMemo(() => {
+    const params = {
+      key: deploymentKey,
+    }
+
+    return params
+  }, [deploymentKey])
+
+  const { data: deploymentDetails, } = useDeploymentDetails(queryParamsDeployment)
+
+  useEffect(() => {
+    if (deploymentDetails) {
+      setApplications(deploymentDetails.applications)
+    }
+  }, [deploymentDetails])
 
     const queryParams = useMemo(() => {
       const params: DeploymentLogQueryParams = {
@@ -95,7 +112,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
     return logs.filter(log => {
       if (logType !== "all" && log.type !== logType) return false
       if (severity !== "all" && log.severity !== severity) return false
-      if (searchQuery && log.details.message && !log.details.message.includes(searchQuery)) return false
+      // if (searchQuery && log.details.message && !log.details.message.includes(searchQuery)) return false
       return true
     })
   }, [logs, logType, severity, searchQuery])
@@ -103,15 +120,15 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
     // Get unique application names from logs for the filter
     const applicationNames = useMemo(() => {
       const names = new Set<string>()
-      logs.forEach((log) => names.add(log.applicationName))
+      applications.forEach((app) => names.add(app.applicationName))
       return Array.from(names).sort()
-    }, [logs])
+    }, [applications])
   
     // Group logs by application name
     const groupedLogs = useMemo(() => {
-      if (!groupByApplication) return { all: logs }
+      if (!groupByApplication) return { all: filterLogs }
   
-      return logs.reduce(
+      return filterLogs.reduce(
         (groups, log) => {
           const appName = log.applicationName
           if (!groups[appName]) {
@@ -122,11 +139,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
         },
         {} as Record<string, DeploymentLog[]>,
       )
-    }, [logs, groupByApplication])
-
-    useEffect(() => {
-      console.log(groupedLogs)
-    }, [groupedLogs])
+    }, [filterLogs, groupByApplication])
 
   const handleTypeChange = (value: string) => {
     const params = new URLSearchParams(searchParams)
@@ -223,7 +236,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
           <div className="grid gap-4">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
+              {/* <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
@@ -232,7 +245,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                   className="w-full sm:w-[300px] pl-8"
                   defaultValue={searchQuery}
                 />
-              </form>
+              </form> */}
               <Select value={applicationName} onValueChange={handleApplicationChange}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Application" />
@@ -331,7 +344,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                 </div>
               ) : (
                 <DeploymentLogsTable
-                  logs={logs}
+                  logs={filterLogs}
                   onSelectLog={setSelectedLog}
                   totalLogs={totalLogs}
                   currentPage={page}

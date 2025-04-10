@@ -123,10 +123,10 @@ let tokenCache: {
 async function getAccessToken(): Promise<string> {
   // Check if we have a valid cached token
   if (tokenCache && tokenCache.expiresAt > Date.now()) {
-    console.log('getAccessToken cached');
+    // console.log('getAccessToken cached');
     return tokenCache.accessToken
   }
-  console.log('getAccessToken not cached');
+  // console.log('getAccessToken not cached');
 
   // Get a new token
   const authUrl = `${API_URL.replace("api", "auth")}/oauth/token`
@@ -169,7 +169,7 @@ export async function fetchDeployments(params: DeploymentQueryParams = {}): Prom
 
     // Make the API request
     const url = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}/deployments/${queryParams.toString()}?limit=${params.limit}`
-    console.log('url', url);
+    // console.log('url', url);
     
     const response = await fetch(url, {
       headers: {
@@ -213,11 +213,11 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Pro
     if (params.endDate) queryParams.append("endDate", params.endDate)
     if (params.pageToken) queryParams.append("pageToken", params.pageToken)
 
-    console.log('params', params);
+    // console.log('params', params);
     
     // Make the API request
     const url = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs?${queryParams.toString()}`
-    console.log('url', url);
+    // console.log('url', url);
     
     const response = await fetch(url, {
       headers: {
