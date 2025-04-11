@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bot,
   Command,
+  Database,
   Frame,
   GalleryVerticalEnd,
   Map,
@@ -25,34 +26,38 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-
-// This is sample data.
-const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-  ],
-  navMain: [
-    {
-      title: "Deployments",
-      url: "/deployments",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [],
-    },
-  ],
-  projects: [],
-}
+import { usePathname } from "next/navigation"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname()
+
+  const data = {
+    teams: [
+      {
+        name: "Acme Corp.",
+        logo: AudioWaveform,
+        plan: "Startup",
+      },
+    ],
+    navMain: [
+      {
+        title: "Deployments",
+        url: "/deployments",
+        icon: SquareTerminal,
+        isActive: pathname === "/deployments" || pathname.startsWith("/deployments"),
+        items: [],
+      },
+      {
+        title: "Custom Objects",
+        url: "/custom-objects",
+        icon: Database,
+        isActive: pathname === "/custom-objects" || pathname.startsWith("/custom-objects"),
+        items: [],
+      },
+    ],
+    projects: [],
+  }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

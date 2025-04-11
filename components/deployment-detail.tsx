@@ -47,6 +47,8 @@ export function DeploymentDetail({ deploymentKey }: DeploymentDetailProps) {
 
   useEffect(() => {
     if (data) {
+      console.log('data', data);
+      
       setDeployment(data)
     }
   }, [data])

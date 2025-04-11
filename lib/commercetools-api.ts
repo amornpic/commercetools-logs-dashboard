@@ -157,33 +157,71 @@ async function getAccessToken(): Promise<string> {
   return tokenCache.accessToken
 }
 
+const BASE_CONNECT_URL = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}`
+const BASE_API_URL = `https://api.${CT_REGION}.commercetools.com/${PROJECT_KEY}`
+
+interface FetchOptions extends RequestInit {
+  headers?: Record<string, string>;
+}
+
+export const apiFetchConnect = async <T>(endpoint: string, options: FetchOptions = {}): Promise<T> => {
+  const token = await getAccessToken();
+
+  const defaultHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+  };
+
+  const response = await fetch(`${BASE_CONNECT_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    console.log('response', response);
+    
+    throw new Error(`API error: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<T>;
+};
+
+export const apiFetch = async <T>(endpoint: string, options: FetchOptions = {}): Promise<T> => {
+  const token = await getAccessToken();
+
+  const defaultHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+  };
+
+  const response = await fetch(`${BASE_API_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    console.log('response', response);
+    
+    throw new Error(`API error: ${response.statusText}`);
+  }
+
+  return response.json() as Promise<T>;
+};
+
 // API Functions
 export async function fetchDeployments(params: DeploymentQueryParams = {}): Promise<DeploymentsResponse> {
   try {
-    const token = await getAccessToken()
-
-    // Build query parameters
     const queryParams = new URLSearchParams()
 
     if (params.key) queryParams.append("key", params.key)
 
-    // Make the API request
-    const url = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}/deployments/${queryParams.toString()}?limit=${params.limit}`
-    // console.log('url', url);
-    
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    })
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`)
-    }
-
-    const data = await response.json()
+    const data = await apiFetchConnect<DeploymentsResponse>(`/deployments/${queryParams.toString()}?limit=${params.limit}`)
     // console.log('data', data);
     
     return data
@@ -200,12 +238,8 @@ export async function fetchDeployments(params: DeploymentQueryParams = {}): Prom
   }
 }
 
-
 export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Promise<DeploymentLogResponse> {
   try {
-    const token = await getAccessToken()
-
-    // Build query parameters
     const queryParams = new URLSearchParams()
 
     if (params.applicationName) queryParams.append("applicationName", params.applicationName)
@@ -213,27 +247,8 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Pro
     if (params.endDate) queryParams.append("endDate", params.endDate)
     if (params.pageToken) queryParams.append("pageToken", params.pageToken)
 
-    // console.log('params', params);
-    
-    // Make the API request
-    const url = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}/deployments/key=${params.key}/logs?${queryParams.toString()}`
-    // console.log('url', url);
-    
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    })
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`)
-    }
-
-    const data = await response.json()
+    const data = await apiFetchConnect<DeploymentLogResponse>(`/deployments/key=${params.key}/logs?${queryParams.toString()}`)
     // console.log('data', data);
-    
 
     return data
   } catch (error) {
@@ -243,6 +258,77 @@ export async function fetchDeploymentLogs(params: DeploymentLogQueryParams): Pro
     return {
       data: [],
       next: null,
+    }
+  }
+}
+
+export interface CustomObject {
+  id: string
+  version: number
+  container: string
+  key: string
+  value: any
+  createdAt: string
+  lastModifiedAt: string
+}
+
+export interface CustomObjectDraft {
+  container: string
+  key: string
+  value: any
+}
+
+export interface CustomObjectPagedQueryResponse {
+  limit: number
+  offset: number
+  count: number
+  total: number
+  results: CustomObject[]
+}
+
+export interface CustomObjectQueryParams {
+  limit?: number
+  offset?: number
+  container?: string
+  key?: string
+  where?: string[]
+  sort?: string[]
+}
+
+// Function to fetch custom objects with filtering and pagination
+export async function fetchCustomObjects(
+  params: CustomObjectQueryParams = {},
+): Promise<CustomObjectPagedQueryResponse> {
+  try {
+    let url = `/custom-objects/${params.container}`
+
+    if (params.key) url += `/${params.key}`
+    // console.log('url', url);
+
+    const data = await apiFetch<CustomObjectPagedQueryResponse>(url)
+    // console.log('data', data);
+
+    if (data.hasOwnProperty("id")) {
+      return {
+        results: [data],
+        total: 1,
+        offset: 0,
+        limit: 0,
+        count: 0,
+      }
+    }
+
+    return data
+  } catch (error) {
+    console.error("Error fetching deployment logs:", error)
+
+    // Return mock data for development/demo purposes
+    return {
+      results: [],
+      total: 0,
+      offset: 0,
+      limit: 0,
+      count: 0,
     }
   }
 }
