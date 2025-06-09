@@ -54,7 +54,7 @@ export function CustomObjectsDashboard() {
   // Fetch custom objects and containers
   const { data, isLoading, isError, error, refetch, isRefetching } = useCustomObjects(queryParams)
 
-  const containers = ["orderError", "orderAdditionalInfo"]
+  const containers = ["orderError", "orderAdditionalInfo", 'promotion_product', 'promotion_product_group', 'promotion_product_detail']
 
   const handleContainerChange = (value: string) => {
     const params = new URLSearchParams(searchParams)
