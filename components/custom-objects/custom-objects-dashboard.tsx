@@ -41,7 +41,7 @@ export function CustomObjectsDashboard() {
     offset: (page - 1) * limit,
     container: container || undefined,
     // where: searchQuery ? [`key="${searchQuery}*"`] : undefined,
-    sort: ["-lastModifiedAt"],
+    // sort: ["lastModifiedAt+desc"],
     key: searchQuery ? searchQuery : undefined,
   }},[searchQuery, container, page, limit])
 

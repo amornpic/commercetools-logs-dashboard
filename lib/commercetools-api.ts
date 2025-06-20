@@ -301,11 +301,20 @@ export async function fetchCustomObjects(
 ): Promise<CustomObjectPagedQueryResponse> {
   try {
     let url = `/custom-objects/${params.container}`
+    // console.log('params', params);
 
+    // const queryParams = new URLSearchParams()
     if (params.key) url += `/${params.key}`
+    // if (params.sort) {
+    //   queryParams.append("sort", 'lastModifiedAt+desc')
+    // }
+    // if (params.where) {
+    //   queryParams.append("where", params.where[0])
+    // }
+
     // console.log('url', url);
 
-    const data = await apiFetch<CustomObjectPagedQueryResponse>(url)
+    const data = await apiFetch<CustomObjectPagedQueryResponse>(url + `?sort=lastModifiedAt+desc`)
     // console.log('data', data);
 
     if (data.hasOwnProperty("id")) {
