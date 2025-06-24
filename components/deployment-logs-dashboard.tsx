@@ -114,6 +114,19 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
       if (severity !== "all" && log.severity !== severity) return false
       // if (searchQuery && log.details.message && !log.details.message.includes(searchQuery)) return false
       return true
+    }).map((data) => {
+      if (data.details.payload?.jsonMessage) {    
+        try {
+          JSON.parse(data.details.payload.jsonMessage)
+          return data
+        }
+        catch (error) {
+          data.details.payload.log =  data.details.payload?.message + data.details.payload?.jsonMessage
+          delete data.details.payload.jsonMessage
+          delete data.details.payload.message
+        }
+      }
+      return data
     })
   }, [logs, logType, severity, searchQuery])
 

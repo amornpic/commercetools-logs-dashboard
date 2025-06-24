@@ -1,12 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import {
-  AlertCircle,
-  AlertTriangle,
   ArrowDown,
   ArrowUp,
-  CheckCircle,
   ChevronDown,
   Code,
   FileText,
@@ -16,7 +13,6 @@ import {
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
@@ -87,13 +83,37 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
   }
 
   const getMessagePreview = (details: any) => {
-    if (details.message) {
-      return details.message.length > 50 ? `${details.message.substring(0, 50)}...` : details.message
+    // For HTTP requests without a message
+    if (details.requestMethod && details.requestUrl) {
+      return `${details.requestMethod} ${details.requestUrl} (${details.status})`
+    }
+    
+    if (details.payload?.log) {
+      try {
+        const j = JSON.parse(details.payload.log)
+        if (j.order_number) {
+
+          if (j.msg) {
+            return `${j.order_number} ${j.msg}`
+          }
+          if (j.response?.messageInfo) {
+            return `${j.order_number} ${j.response?.messageInfo}`
+          }
+          if (j.response?.message) {
+            return `${j.order_number} ${j.response?.message}`
+          }
+        }
+
+        if (j.response?.data) {
+          return j.response?.data
+        }
+      } catch (error) {
+        // return details.payload.log
+      }
     }
 
-    // For HTTP requests without a message
-    if (details.method && details.path) {
-      return `${details.method} ${details.path} (${details.statusCode})`
+    if (details.message) {
+      return details.message.length > 50 ? `${details.message.substring(0, 50)}...` : details.message
     }
 
     return JSON.stringify(details).substring(0, 50) + "..."

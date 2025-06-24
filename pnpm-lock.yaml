@@ -72,7 +72,7 @@ importers:
         specifier: ^1.2.2
         version: 1.2.4(@types/react-dom@19.1.2(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-slot':
-        specifier: ^1.1.2
+        specifier: ^1.2.0
         version: 1.2.0(@types/react@19.1.0)(react@19.1.0)
       '@radix-ui/react-switch':
         specifier: ^1.1.2
@@ -114,7 +114,7 @@ importers:
         specifier: 1.0.4
         version: 1.0.4(@types/react-dom@19.1.2(@types/react@19.1.0))(@types/react@19.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       date-fns:
-        specifier: latest
+        specifier: ^4.1.0
         version: 4.1.0
       dayjs:
         specifier: ^1.11.13
@@ -138,7 +138,7 @@ importers:
         specifier: ^19
         version: 19.1.0
       react-day-picker:
-        specifier: latest
+        specifier: ^9.6.5
         version: 9.6.5(react@19.1.0)
       react-dom:
         specifier: ^19
