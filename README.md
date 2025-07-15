@@ -34,11 +34,13 @@ Ensure you have the following installed:
    ```env
     CT_API_URL=your_api_url
     CT_REGION=your_region
-    CT_PROJECT_KEY=your_project_key
-    CT_CLIENT_ID=your_client_id
-    CT_CLIENT_SECRET=your_client_secret
+    CT_PROJECT_KEYS=your_project_key_dev,your_project_key_uat
+    CT_CLIENT_IDS=your_client_id,your_client_id
+    CT_CLIENT_SECRETS=your_client_secret,your_client_secret
     CT_SCOPES=your_scopes
    ```
+   
+   Note: You can specify multiple project keys in the `CT_PROJECT_KEYS` variable by separating them with commas. This allows you to switch between different environments (e.g., development and UAT) using the environment switcher in the application.
 4. Start the development server:
    ```sh
    bun run dev

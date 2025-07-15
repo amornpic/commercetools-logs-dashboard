@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { AudioWaveform, ChevronsUpDown, Plus } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -18,20 +18,39 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { setActiveProjectKey } from "@/lib/commercetools-api"
 
-export function TeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
-}) {
+export function EnvironmentSwitcher() {
+  const projectKeys = (process.env.NEXT_PUBLIC_CT_PROJECT_KEYS || 'project-key').split(',')
+  const environments = projectKeys.map(key => ({
+    key,
+    name: key,
+    logo: AudioWaveform,
+  }))
+  const [activeEnvironment, setActiveEnvironment] = React.useState(environments[0].key)
+  
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
 
-  if (!activeTeam) {
+  React.useEffect(() => {
+    const storedProjectKey = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('activeProjectKey='))
+      ?.split('=')[1];
+    
+    if (storedProjectKey) {
+      setActiveEnvironment(storedProjectKey);
+    } else {
+      handleChange(environments[0].key)
+    }
+  }, []);
+
+  const handleChange = async (env: string) => {
+    setActiveEnvironment(env)
+    await setActiveProjectKey(env)
+    location.replace('/deployments');
+  }
+
+  if (!activeEnvironment) {
     return null
   }
 
@@ -44,14 +63,13 @@ export function TeamSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-4" />
-              </div>
+              {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <activeEnvironment.logo className="size-4" />
+              </div> */}
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {activeTeam.name}
+                  {environments.find(env => env.key === activeEnvironment)?.name}
                 </span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -63,28 +81,21 @@ export function TeamSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Teams
+              Project Keys
             </DropdownMenuLabel>
-            {teams.map((team, index) => (
+            {environments && environments.map((env, index) => (
               <DropdownMenuItem
-                key={team.name}
-                onClick={() => setActiveTeam(team)}
+                key={env.key}
+                onClick={() => handleChange(env.key)}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
+                  <env.logo className="size-4 shrink-0" />
                 </div>
-                {team.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                {env.name}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-                <Plus className="size-4" />
-              </div>
-              <div className="font-medium text-muted-foreground">Add team</div>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

@@ -18,7 +18,7 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { EnvironmentSwitcher } from "@/components/environment-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -32,13 +32,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
   const data = {
-    teams: [
-      {
-        name: "Acme Corp.",
-        logo: AudioWaveform,
-        plan: "Startup",
-      },
-    ],
     navMain: [
       {
         title: "Deployments",
@@ -61,7 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <EnvironmentSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

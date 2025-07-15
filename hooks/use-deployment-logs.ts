@@ -70,7 +70,7 @@ export function useNextDeploymentLogs() {
       const currentData = queryClient.getQueryData(queryKeys.logs(variables.params)) as
         | DeploymentLogResponse
         | undefined
-
+      
       // Merge the current data with the new data
       if (currentData && data.data) {
         const mergedData = {

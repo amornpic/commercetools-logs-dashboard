@@ -55,7 +55,7 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
   }, [deploymentKey])
 
   const { data: deploymentDetails, } = useDeploymentDetails(queryParamsDeployment)
-
+  
   useEffect(() => {
     if (deploymentDetails) {
       setApplications(deploymentDetails.applications)

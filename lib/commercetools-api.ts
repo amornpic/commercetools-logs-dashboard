@@ -1,6 +1,7 @@
 "use server"
 
 import { Severity } from "@/types"
+import { cookies } from 'next/headers';
 
 // Types based on commercetools API
 export interface Deployment {
@@ -108,10 +109,12 @@ export interface DeploymentLogResponse {
 
 // Configuration
 const API_URL = process.env.CT_API_URL || "https://api.europe-west1.gcp.commercetools.com"
-const PROJECT_KEY = process.env.CT_PROJECT_KEY || "your-project-key"
-const CLIENT_ID = process.env.CT_CLIENT_ID
-const CLIENT_SECRET = process.env.CT_CLIENT_SECRET
-const SCOPES = process.env.CT_SCOPES || "manage_project:your-project-key"
+
+// Handle multiple project keys
+const PROJECT_KEYS = (process.env.NEXT_PUBLIC_CT_PROJECT_KEYS || "your-project-key,your-project-key-2").split(",")
+const CLIENT_IDS = (process.env.CT_CLIENT_IDS || "your-client-id,your-client-id-2").split(",")
+const CLIENT_SECRETS = (process.env.CT_CLIENT_SECRETS || "your-client-secret,your-client-secret-2").split(",")
+const SCOPES = (process.env.CT_SCOPES || "view_connectors_deployments view_products").split(" ")
 const CT_REGION = process.env.CT_REGION
 
 // Authentication
@@ -120,12 +123,44 @@ let tokenCache: {
   expiresAt: number
 } | null = null
 
-async function getAccessToken(): Promise<string> {
+// Get current project key
+const getProjectKey = async () => {
+  const cookieStore = await cookies();
+  const activeProjectKey = cookieStore.get('activeProjectKey')?.value;
+  // console.log('activeProjectKey', activeProjectKey);
+  if (!activeProjectKey) {
+    throw new Error('No active project key found')
+  }
+  
+  return activeProjectKey as string
+}
+
+// Set current environment
+export const setActiveProjectKey = async (projectKey: string) => {
+  const cookieStore = await cookies()
+  cookieStore.set('activeProjectKey', projectKey);
+  tokenCache = null
+}
+
+async function getAccessToken(projectKey: string): Promise<string> {
   // Check if we have a valid cached token
   if (tokenCache && tokenCache.expiresAt > Date.now()) {
     // console.log('getAccessToken cached');
     return tokenCache.accessToken
   }
+  const projectKeyIndex = PROJECT_KEYS.indexOf(projectKey)
+  const clientId = CLIENT_IDS[projectKeyIndex]
+  const clientSecret = CLIENT_SECRETS[projectKeyIndex]
+  const scope = SCOPES.join(`:${projectKey} `) + `:${projectKey}`
+
+  // console.log('clientId', clientId);
+  // console.log('clientSecret', clientSecret);
+  // console.log('scope', scope);
+
+  if (!clientId || !clientSecret || !scope) {
+    throw new Error('No client id or secret or scope found for project key')
+  }
+
   // console.log('getAccessToken not cached');
 
   // Get a new token
@@ -134,15 +169,17 @@ async function getAccessToken(): Promise<string> {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")}`,
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
     },
     body: new URLSearchParams({
       grant_type: "client_credentials",
-      scope: SCOPES,
+      scope: scope,
     }),
   })
 
   if (!response.ok) {
+    // console.log('response', response);
+    
     throw new Error(`Authentication failed: ${response.statusText}`)
   }
 
@@ -157,22 +194,24 @@ async function getAccessToken(): Promise<string> {
   return tokenCache.accessToken
 }
 
-const BASE_CONNECT_URL = `https://connect.${CT_REGION}.commercetools.com/${PROJECT_KEY}`
-const BASE_API_URL = `https://api.${CT_REGION}.commercetools.com/${PROJECT_KEY}`
+const getBaseConnectUrl = (projectKey: string) => `https://connect.${CT_REGION}.commercetools.com/${projectKey}`
+const getBaseApiUrl = (projectKey: string) => `https://api.${CT_REGION}.commercetools.com/${projectKey}`
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;
 }
 
 export const apiFetchConnect = async <T>(endpoint: string, options: FetchOptions = {}): Promise<T> => {
-  const token = await getAccessToken();
+  const projectKey = await getProjectKey();
+  const token = await getAccessToken(projectKey);
+  const baseUrl = getBaseConnectUrl(projectKey);
 
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 
-  const response = await fetch(`${BASE_CONNECT_URL}${endpoint}`, {
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers: {
       ...defaultHeaders,
@@ -190,14 +229,16 @@ export const apiFetchConnect = async <T>(endpoint: string, options: FetchOptions
 };
 
 export const apiFetch = async <T>(endpoint: string, options: FetchOptions = {}): Promise<T> => {
-  const token = await getAccessToken();
+  const projectKey = await getProjectKey()
+  const token = await getAccessToken(projectKey);
+  const baseApiUrl = getBaseApiUrl(projectKey);
 
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 
-  const response = await fetch(`${BASE_API_URL}${endpoint}`, {
+  const response = await fetch(`${baseApiUrl}${endpoint}`, {
     ...options,
     headers: {
       ...defaultHeaders,
