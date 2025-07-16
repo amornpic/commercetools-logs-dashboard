@@ -44,7 +44,8 @@ interface DeploymentLogsTableProps {
 export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false, nextCursor, onLoadMore, isLoadingMore }: DeploymentLogsTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof DeploymentLog>("timestamp")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
-
+  console.log('logs', logs);
+  
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -92,7 +93,6 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
       try {
         const j = JSON.parse(details.payload.log)
         if (j.order_number) {
-
           if (j.msg) {
             return `${j.order_number} ${j.msg}`
           }
@@ -104,10 +104,15 @@ export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage,
           }
         }
 
+        if (j.msg) {
+            return j.msg
+        }
+
         if (j.response?.data) {
-          return j.response?.data
+          return JSON.stringify(j.response?.data)
         }
       } catch (error) {
+        console.log('getMessagePreview error', error);
         // return details.payload.log
       }
     }
