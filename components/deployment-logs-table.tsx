@@ -44,7 +44,6 @@ interface DeploymentLogsTableProps {
 export function DeploymentLogsTable({ logs, onSelectLog, totalLogs, currentPage, pageSize, hideApplicationColumn = false, nextCursor, onLoadMore, isLoadingMore }: DeploymentLogsTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof DeploymentLog>("timestamp")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
-  console.log('logs', logs);
   
   const router = useRouter()
   const searchParams = useSearchParams()
