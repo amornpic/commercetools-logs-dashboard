@@ -256,26 +256,21 @@ export const apiFetch = async <T>(endpoint: string, options: FetchOptions = {}):
 };
 
 // API Functions
-export async function fetchDeployments(params: DeploymentQueryParams = {}): Promise<DeploymentsResponse> {
+export async function fetchDeployments(params: DeploymentQueryParams = {}): Promise<Deployment | null> {
   try {
     const queryParams = new URLSearchParams()
 
     if (params.key) queryParams.append("key", params.key)
 
-    const data = await apiFetchConnect<DeploymentsResponse>(`/deployments/${queryParams.toString()}?limit=${params.limit}`)
-    // console.log('data', data);
+    const data = await apiFetchConnect<Deployment>(`/deployments/${queryParams.toString()}?limit=${params.limit}`)
+    console.log('fetchDeployments', data);
     
     return data
   } catch (error) {
     console.error("Error fetching deployment logs:", error)
 
     // Return mock data for development/demo purposes
-    return {
-      results: [],
-      total: 0,
-      offset: 0,
-      limit: 0,
-    }
+    return null
   }
 }
 
