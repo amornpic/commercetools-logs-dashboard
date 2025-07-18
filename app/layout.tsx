@@ -4,7 +4,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Commercetools Logs Dashboard',
 }
-
+import Script from 'next/script'
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -32,6 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Script defer src="https://cloud.umami.is/script.js" data-website-id="98ed8129-9cc7-4865-8abf-98cfda1fd9d7" />
       <body>
       <ReactQueryProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
