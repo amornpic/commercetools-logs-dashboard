@@ -117,11 +117,15 @@ const CLIENT_SECRETS = (process.env.CT_CLIENT_SECRETS || "your-client-secret,you
 const SCOPES = (process.env.CT_SCOPES || "view_connectors_deployments view_products").split(" ")
 const CT_REGION = process.env.CT_REGION
 
+interface TokenCache {
+  [projectKey: string]: {
+    accessToken: string
+    expiresAt: number
+  }
+}
+
 // Authentication
-let tokenCache: {
-  accessToken: string
-  expiresAt: number
-} | null = null
+let tokenCache: TokenCache = {}
 
 // Get current project key
 const getProjectKey = async () => {
@@ -139,14 +143,13 @@ const getProjectKey = async () => {
 export const setActiveProjectKey = async (projectKey: string) => {
   const cookieStore = await cookies()
   cookieStore.set('activeProjectKey', projectKey);
-  tokenCache = null
 }
 
 async function getAccessToken(projectKey: string): Promise<string> {
   // Check if we have a valid cached token
-  if (tokenCache && tokenCache.expiresAt > Date.now()) {
+  if (tokenCache[projectKey] && tokenCache[projectKey].expiresAt > Date.now()) {
     // console.log('getAccessToken cached');
-    return tokenCache.accessToken
+    return tokenCache[projectKey].accessToken
   }
   const projectKeyIndex = PROJECT_KEYS.indexOf(projectKey)
   const clientId = CLIENT_IDS[projectKeyIndex]
@@ -186,12 +189,12 @@ async function getAccessToken(projectKey: string): Promise<string> {
   const data = await response.json()
 
   // Cache the token
-  tokenCache = {
+  tokenCache[projectKey] = {
     accessToken: data.access_token,
     expiresAt: Date.now() + data.expires_in * 1000 - 60000, // Subtract 1 minute for safety
   }
 
-  return tokenCache.accessToken
+  return tokenCache[projectKey].accessToken
 }
 
 const getBaseConnectUrl = (projectKey: string) => `https://connect.${CT_REGION}.commercetools.com/${projectKey}`
@@ -263,7 +266,7 @@ export async function fetchDeployments(params: DeploymentQueryParams = {}): Prom
     if (params.key) queryParams.append("key", params.key)
 
     const data = await apiFetchConnect<Deployment>(`/deployments/${queryParams.toString()}?limit=${params.limit}`)
-    console.log('fetchDeployments', data);
+    // console.log('fetchDeployments', data);
     
     return data
   } catch (error) {
