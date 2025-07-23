@@ -21,6 +21,7 @@ import type { DeploymentApplication, DeploymentLog, DeploymentLogQueryParams } f
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
 import { Badge } from "./ui/badge"
 import { useDeploymentDetails, useDeploymentLogs, useNextDeploymentLogs, useRefreshLogs } from "@/hooks/use-deployment-logs"
+import { DateTimePicker } from "./datetime-picker"
 
 interface DeploymentLogsDashboardProps {
   deploymentKey: string 
@@ -68,12 +69,14 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
       }
   
       // Add date range if available
-      if (dateRange.from) {
-        params.startDate = dateRange.from.toISOString()
-      }
+      if (dateRange) {
+        if (dateRange.from) {
+          params.startDate = dateRange.from.toISOString()
+        }
   
-      if (dateRange.to) {
-        params.endDate = dateRange.to.toISOString()
+        if (dateRange.to) {
+          params.endDate = dateRange.to.toISOString()
+        }
       }
 
       if (applicationName !== "all") {
@@ -206,8 +209,18 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
     router.push(`?${params.toString()}`)
   }
 
-  const handleDateRangeChange = (range: { from?: Date; to?: Date }) => {
-    setDateRange(range)
+  const handleDateFrom = (date: Date) => {
+    setDateRange(prevRange => ({
+      ...prevRange,
+      from: date
+    }))
+  }
+
+  const handleDateTo = (date: Date) => {
+    setDateRange(prevRange => ({
+      ...prevRange,
+      to: date
+    }))
   }
 
   const handleRefresh = () => {
@@ -266,8 +279,13 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
 
       <div className="container px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <DateRangePicker onChange={handleDateRangeChange} />
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-start">
+            <div>
+              <DateTimePicker dateData={dateRange?.from} onChange={handleDateFrom} label="Start Date"/>
+            </div>
+            <div>
+              <DateTimePicker dateData={dateRange?.to} onChange={handleDateTo} label="End Date"/>
+            </div>
           </div>
 
           <div className="grid gap-4">
