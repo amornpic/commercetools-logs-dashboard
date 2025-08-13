@@ -41,8 +41,8 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
   const searchQuery = searchParams.get("q") || ""
   const page = Number.parseInt(searchParams.get("page") || "1", 10)
   const limit = Number.parseInt(searchParams.get("limit") || "50", 10)
-  const [groupByApplication, setGroupByApplication] = useState(false)
-  const [groupByOrderNumber, setGroupByOrderNumber] = useState(false)
+  // Group by options
+  const [groupByKey, setGroupByKey] = useState<string | null>(null) // null, 'application', 'orderNumber', etc.
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const [applications, setApplications] = useState<DeploymentApplication[]>([])
@@ -141,41 +141,63 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
       return Array.from(names).sort()
     }, [applications])
   
-    // Group logs by application name
-    const groupedLogs = useMemo(() => {
-      if (!groupByApplication) return { all: filterLogs }
-  
-      return filterLogs.reduce(
-        (groups, log) => {
-          const appName = log.applicationName
-          if (!groups[appName]) {
-            groups[appName] = []
+    // Generic function to group logs by different keys
+  const groupLogs = useCallback((logs: DeploymentLog[], groupKey: string | null): Record<string, DeploymentLog[]> => {
+    if (!groupKey) return { all: logs }
+    
+    // Define extractors for different group keys
+    const keyExtractors: Record<string, (log: DeploymentLog) => string | undefined> = {
+      application: (log) => log.applicationName,
+      orderNumber: (log) => {
+        if (log.details.payload?.log) {
+          try {
+            const logObject = JSON.parse(log.details.payload.log)
+            return logObject.order_number
+          } catch (e) {
+            return undefined
           }
-          groups[appName].push(log)
-          return groups
-        },
-        {} as Record<string, DeploymentLog[]>,
-      )
-    }, [filterLogs, groupByApplication])
-
-  const groupedOrderNumberLogs = useMemo(() => {
-    if (!groupByOrderNumber) return { all: filterLogs }
-
-    return filterLogs.filter((log) => {
-      return log.details.payload?.log !== undefined
-    }).reduce(
-      (groups, log) => {
-        const logObject = JSON.parse(log.details.payload.log)
-        const orderNumber = logObject.order_number
-        if (!groups[orderNumber]) {
-          groups[orderNumber] = []
         }
-        groups[orderNumber].push(log)
-        return groups
+        return undefined
       },
-      {} as Record<string, DeploymentLog[]>,
-    )
-    }, [filterLogs, groupByOrderNumber])
+      correlationId: (log) => {
+        if (log.details.payload?.log) {
+          try {
+            const logObject = JSON.parse(log.details.payload.log)
+            return logObject.correlation_id
+          } catch (e) {
+            return undefined
+          }
+        }
+        return undefined
+      }
+    }
+    
+    const extractor = keyExtractors[groupKey]
+    if (!extractor) return { all: logs }
+    
+    // Filter logs that have the required key
+    const validLogs = logs.filter(log => {
+      const key = extractor(log)
+      return key !== undefined && key !== null && key !== ''
+    })
+    
+    // Group logs by the extracted key
+    return validLogs.reduce((groups, log) => {
+      const key = extractor(log)
+      if (!key) return groups
+      
+      if (!groups[key]) {
+        groups[key] = []
+      }
+      groups[key].push(log)
+      return groups
+    }, {} as Record<string, DeploymentLog[]>)
+  }, [])
+  
+  // Group logs based on the selected grouping key
+  const groupedLogs = useMemo(() => {
+    return groupLogs(filterLogs, groupByKey)
+  }, [filterLogs, groupByKey, groupLogs])
 
   const handleTypeChange = (value: string) => {
     const params = new URLSearchParams(searchParams)
@@ -238,12 +260,8 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
     }))
   }
 
-  const toggleGrouping = () => {
-    setGroupByApplication((prev) => !prev)
-  }
-
-  const toggleOrderNumberGrouping = () => {
-    setGroupByOrderNumber((prev) => !prev)
+  const handleGroupingChange = (key: string | null) => {
+    setGroupByKey(prev => prev === key ? null : key)
   }
 
   if (isError) {
@@ -337,12 +355,17 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                     <SelectItem value="ERROR">Error</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" className="h-9 gap-1" onClick={toggleGrouping}>
-                  {groupByApplication ? "Ungroup" : "Group by App"}
-                </Button>
-                <Button variant="outline" size="sm" className="h-9 gap-1" onClick={toggleOrderNumberGrouping}>
-                  {groupByOrderNumber ? "Ungroup" : "Group by Order Number"}
-                </Button>
+                <Select value={groupByKey || "none"} onValueChange={(value) => handleGroupingChange(value === "none" ? null : value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Group by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Grouping</SelectItem>
+                    <SelectItem value="application">Group by App</SelectItem>
+                    <SelectItem value="orderNumber">Group by Order Number</SelectItem>
+                    <SelectItem value="correlationId">Group by Correlation ID</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
             </div>
@@ -360,26 +383,26 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                   <Skeleton className="h-20 w-full" />
                   <Skeleton className="h-20 w-full" />
                 </div>
-              ) : groupByApplication ? (
+              ) : groupByKey ? (
                 <div className="space-y-4">
                   {Object.keys(groupedLogs).length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">No logs found matching your criteria.</div>
                   ) : (
-                    Object.entries(groupedLogs).map(([appName, appLogs]) => (
+                    Object.entries(groupedLogs).map(([groupValue, groupLogs]) => (
                       <Collapsible
-                        key={appName}
-                        open={expandedGroups[appName]}
-                        onOpenChange={() => toggleGroupExpand(appName)}
+                        key={groupValue}
+                        open={expandedGroups[groupValue]}
+                        onOpenChange={() => toggleGroupExpand(groupValue)}
                         className="border rounded-md overflow-hidden"
                       >
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-muted/50 hover:bg-muted">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{appName}</span>
+                            <span className="font-medium">{groupValue}</span>
                             <Badge variant="outline" className="ml-2">
-                              {logs.length} logs
+                              {groupLogs.length} logs
                             </Badge>
                           </div>
-                          {expandedGroups[appName] ? (
+                          {expandedGroups[groupValue] ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
                             <ChevronRight className="h-4 w-4" />
@@ -387,52 +410,12 @@ export function DeploymentLogsDashboard({ deploymentKey }: DeploymentLogsDashboa
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <DeploymentLogsTable
-                            logs={appLogs}
+                            logs={groupLogs}
                             onSelectLog={setSelectedLog}
-                            totalLogs={appLogs.length}
+                            totalLogs={groupLogs.length}
                             currentPage={1}
-                            pageSize={appLogs.length}
-                            hideApplicationColumn={true}
-                            isLoadingMore={isLoadingMore}
-                          />
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ))
-                  )}
-                </div>
-              ) : groupByOrderNumber ? (
-                <div className="space-y-4">
-                  {Object.keys(groupedOrderNumberLogs).length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">No logs found matching your criteria.</div>
-                  ) : (
-                    Object.entries(groupedOrderNumberLogs).map(([orderNumber, orderNumberLogs]) => (
-                      <Collapsible
-                        key={orderNumber}
-                        open={expandedGroups[orderNumber]}
-                        onOpenChange={() => toggleGroupExpand(orderNumber)}
-                        className="border rounded-md overflow-hidden"
-                      >
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-muted/50 hover:bg-muted">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{orderNumber}</span>
-                            <Badge variant="outline" className="ml-2">
-                              {orderNumberLogs.length} logs
-                            </Badge>
-                          </div>
-                          {expandedGroups[orderNumber] ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <DeploymentLogsTable
-                            logs={orderNumberLogs}
-                            onSelectLog={setSelectedLog}
-                            totalLogs={orderNumberLogs.length}
-                            currentPage={1}
-                            pageSize={orderNumberLogs.length}
-                            hideApplicationColumn={true}
+                            pageSize={groupLogs.length}
+                            hideApplicationColumn={groupByKey === 'application'}
                             isLoadingMore={isLoadingMore}
                           />
                         </CollapsibleContent>
