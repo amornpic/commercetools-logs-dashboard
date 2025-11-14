@@ -1,12 +1,26 @@
 # Commercetools Logs Dashboard
 
 ## Overview
-Commercetools Logs Dashboard is a web application designed to visualize and analyze logs from Commercetools. It provides an intuitive interface for filtering, searching, and monitoring logs in real time, making it easier to diagnose issues and track system performance.
+Commercetools Logs Dashboard is a web application designed to visualize and analyze logs from Commercetools. It provides an intuitive interface for filtering, searching, and monitoring logs, making it easier to diagnose issues and track system performance.
 
 ## Features
 - **Log Visualization:** View logs in a structured and easy-to-read format.
 - **Filtering & Searching:** Search logs based on various criteria such as timestamp, severity, and keywords.
 - **User-Friendly Interface:** A responsive and interactive dashboard for seamless user experience.
+
+## Screenshots
+![deployments](./images/deployments.png)
+
+![deployments-detail](./images/deployments-detail.png)
+
+![logs](./images/logs.png)
+
+![logs-detail](./images/logs-detail.png)
+
+![custom-objects](./images/custom-objects.png)
+
+![custom-objects-detail](./images/custom-objects-detail.png)
+
 
 ## Tech Stack
 - React, TypeScript, NextJS, Tailwind CSS, React Query, shadcn/ui, and more.
