@@ -103,7 +103,7 @@ importers:
         version: 10.4.21(postcss@8.5.3)
       bun:
         specifier: latest
-        version: 1.2.9
+        version: 1.3.6
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -129,8 +129,8 @@ importers:
         specifier: ^0.485.0
         version: 0.485.0(react@19.1.0)
       next:
-        specifier: 15.1.0
-        version: 15.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 15.1.11
+        version: 15.1.11(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -427,56 +427,56 @@ packages:
   '@napi-rs/wasm-runtime@0.2.8':
     resolution: {integrity: sha512-OBlgKdX7gin7OIq4fadsjpg+cp2ZphvAIKucHsNfTdJiqdOmOEwQd/bHi0VwNrcw5xpBJyUw6cK/QilCqy1BSg==}
 
-  '@next/env@15.1.0':
-    resolution: {integrity: sha512-UcCO481cROsqJuszPPXJnb7GGuLq617ve4xuAyyNG4VSSocJNtMU5Fsx+Lp6mlN8c7W58aZLc5y6D/2xNmaK+w==}
+  '@next/env@15.1.11':
+    resolution: {integrity: sha512-yp++FVldfLglEG5LoS2rXhGypPyoSOyY0kxZQJ2vnlYJeP8o318t5DrDu5Tqzr03qAhDWllAID/kOCsXNLcwKw==}
 
   '@next/eslint-plugin-next@15.3.0':
     resolution: {integrity: sha512-511UUcpWw5GWTyKfzW58U2F/bYJyjLE9e3SlnGK/zSXq7RqLlqFO8B9bitJjumLpj317fycC96KZ2RZsjGNfBw==}
 
-  '@next/swc-darwin-arm64@15.1.0':
-    resolution: {integrity: sha512-ZU8d7xxpX14uIaFC3nsr4L++5ZS/AkWDm1PzPO6gD9xWhFkOj2hzSbSIxoncsnlJXB1CbLOfGVN4Zk9tg83PUw==}
+  '@next/swc-darwin-arm64@15.1.9':
+    resolution: {integrity: sha512-sQF6MfW4nk0PwMYYq8xNgqyxZJGIJV16QqNDgaZ5ze9YoVzm4/YNx17X0exZudayjL9PF0/5RGffDtzXapch0Q==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@next/swc-darwin-x64@15.1.0':
-    resolution: {integrity: sha512-DQ3RiUoW2XC9FcSM4ffpfndq1EsLV0fj0/UY33i7eklW5akPUCo6OX2qkcLXZ3jyPdo4sf2flwAED3AAq3Om2Q==}
+  '@next/swc-darwin-x64@15.1.9':
+    resolution: {integrity: sha512-fp0c1rB6jZvdSDhprOur36xzQvqelAkNRXM/An92sKjjtaJxjlqJR8jiQLQImPsClIu8amQn+ZzFwl1lsEf62w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@next/swc-linux-arm64-gnu@15.1.0':
-    resolution: {integrity: sha512-M+vhTovRS2F//LMx9KtxbkWk627l5Q7AqXWWWrfIzNIaUFiz2/NkOFkxCFyNyGACi5YbA8aekzCLtbDyfF/v5Q==}
+  '@next/swc-linux-arm64-gnu@15.1.9':
+    resolution: {integrity: sha512-77rYykF6UtaXvxh9YyRIKoaYPI6/YX6cy8j1DL5/1XkjbfOwFDfTEhH7YGPqG/ePl+emBcbDYC2elgEqY2e+ag==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@next/swc-linux-arm64-musl@15.1.0':
-    resolution: {integrity: sha512-Qn6vOuwaTCx3pNwygpSGtdIu0TfS1KiaYLYXLH5zq1scoTXdwYfdZtwvJTpB1WrLgiQE2Ne2kt8MZok3HlFqmg==}
+  '@next/swc-linux-arm64-musl@15.1.9':
+    resolution: {integrity: sha512-uZ1HazKcyWC7RA6j+S/8aYgvxmDqwnG+gE5S9MhY7BTMj7ahXKunpKuX8/BA2M7OvINLv7LTzoobQbw928p3WA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@next/swc-linux-x64-gnu@15.1.0':
-    resolution: {integrity: sha512-yeNh9ofMqzOZ5yTOk+2rwncBzucc6a1lyqtg8xZv0rH5znyjxHOWsoUtSq4cUTeeBIiXXX51QOOe+VoCjdXJRw==}
+  '@next/swc-linux-x64-gnu@15.1.9':
+    resolution: {integrity: sha512-gQIX1d3ct2RBlgbbWOrp+SHExmtmFm/HSW1Do5sSGMDyzbkYhS2sdq5LRDJWWsQu+/MqpgJHqJT6ORolKp/U1g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@next/swc-linux-x64-musl@15.1.0':
-    resolution: {integrity: sha512-t9IfNkHQs/uKgPoyEtU912MG6a1j7Had37cSUyLTKx9MnUpjj+ZDKw9OyqTI9OwIIv0wmkr1pkZy+3T5pxhJPg==}
+  '@next/swc-linux-x64-musl@15.1.9':
+    resolution: {integrity: sha512-fJOwxAbCeq6Vo7pXZGDP6iA4+yIBGshp7ie2Evvge7S7lywyg7b/SGqcvWq/jYcmd0EbXdb7hBfdqSQwTtGTPg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@next/swc-win32-arm64-msvc@15.1.0':
-    resolution: {integrity: sha512-WEAoHyG14t5sTavZa1c6BnOIEukll9iqFRTavqRVPfYmfegOAd5MaZfXgOGG6kGo1RduyGdTHD4+YZQSdsNZXg==}
+  '@next/swc-win32-arm64-msvc@15.1.9':
+    resolution: {integrity: sha512-crfbUkAd9PVg9nGfyjSzQbz82dPvc4pb1TeP0ZaAdGzTH6OfTU9kxidpFIogw0DYIEadI7hRSvuihy2NezkaNQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@next/swc-win32-x64-msvc@15.1.0':
-    resolution: {integrity: sha512-J1YdKuJv9xcixzXR24Dv+4SaDKc2jj31IVUEMdO5xJivMTXuE6MAdIi4qPjSymHuFG8O5wbfWKnhJUcHHpj5CA==}
+  '@next/swc-win32-x64-msvc@15.1.9':
+    resolution: {integrity: sha512-SBB0oA4E2a0axUrUwLqXlLkSn+bRx9OWU6LheqmRrO53QEAJP7JquKh3kF0jRzmlYOWFZtQwyIWJMEJMtvvDcQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -497,58 +497,58 @@ packages:
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
 
-  '@oven/bun-darwin-aarch64@1.2.9':
-    resolution: {integrity: sha512-A190s6twmzNE6KGVoUxEDQaSebXUY0bTYXUwnAqTWpE/LxkkDZ7VLhDKxe0nqiDOWStSTTXpfZcFp5T2D6c8iQ==}
+  '@oven/bun-darwin-aarch64@1.3.6':
+    resolution: {integrity: sha512-27rypIapNkYboOSylkf1tD9UW9Ado2I+P1NBL46Qz29KmOjTL6WuJ7mHDC5O66CYxlOkF5r93NPDAC3lFHYBXw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oven/bun-darwin-x64-baseline@1.2.9':
-    resolution: {integrity: sha512-iCqYZJ1lLlAirNoidH/nAx8Rg8WXoUs/8BjkMaCfjJG99YXSU00LH39MuxJQDRKlgKnd7IWQNJAluPuuB7j1Tw==}
+  '@oven/bun-darwin-x64-baseline@1.3.6':
+    resolution: {integrity: sha512-nqtr+pTsHqusYpG2OZc6s+AmpWDB/FmBvstrK0y5zkti4OqnCuu7Ev2xNjS7uyb47NrAFF40pWqkpaio5XEd7w==}
     cpu: [x64]
     os: [darwin]
 
-  '@oven/bun-darwin-x64@1.2.9':
-    resolution: {integrity: sha512-s3unmXAPwhaZYpPWoiHb5X6Kxgl7sehf8AB+VQFr85WCaOZoqZhsFl4GzC9G06cdt8pBLxo6l5lI9bi4YmRFBw==}
+  '@oven/bun-darwin-x64@1.3.6':
+    resolution: {integrity: sha512-I82xGzPkBxzBKgbl8DsA0RfMQCWTWjNmLjIEkW1ECiv3qK02kHGQ5FGUr/29L/SuvnGsULW4tBTRNZiMzL37nA==}
     cpu: [x64]
     os: [darwin]
 
-  '@oven/bun-linux-aarch64-musl@1.2.9':
-    resolution: {integrity: sha512-IUA/5zR0FqWF6vwg7Ad9gFRbuu/uqGtoNyuq+mcfxZI1HhG0LKWVciuyXe0rpQ9Eno0YkEjcr2z271NTDyeNWg==}
-    cpu: [aarch64]
-    os: [linux]
-
-  '@oven/bun-linux-aarch64@1.2.9':
-    resolution: {integrity: sha512-tyf8g3H+/CLyItST7/UKkLpRawViaBwroOAOVo0KB4fK+d8WZTDZdHJK9reifs7wwOWhgNrARakPV3d7Sj01HQ==}
+  '@oven/bun-linux-aarch64-musl@1.3.6':
+    resolution: {integrity: sha512-FR+iJt17rfFgYgpxL3M67AUwujOgjw52ZJzB9vElI5jQXNjTyOKf8eH4meSk4vjlYF3h/AjKYd6pmN0OIUlVKQ==}
     cpu: [arm64]
     os: [linux]
 
-  '@oven/bun-linux-x64-baseline@1.2.9':
-    resolution: {integrity: sha512-OSa6e8fCgNO8AtM6OL2Tgav+/DiJ5aRuzvAy4lLWQWkmGuzbCqLz/+nJqRrpfL6ALAFDg66ucx8GMa0w2bL4+g==}
+  '@oven/bun-linux-aarch64@1.3.6':
+    resolution: {integrity: sha512-YaQEAYjBanoOOtpqk/c5GGcfZIyxIIkQ2m1TbHjedRmJNwxzWBhGinSARFkrRIc3F8pRIGAopXKvJ/2rjN1LzQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oven/bun-linux-x64-baseline@1.3.6':
+    resolution: {integrity: sha512-jRmnX18ak8WzqLrex3siw0PoVKyIeI5AiCv4wJLgSs7VKfOqrPycfHIWfIX2jdn7ngqbHFPzI09VBKANZ4Pckg==}
     cpu: [x64]
     os: [linux]
 
-  '@oven/bun-linux-x64-musl-baseline@1.2.9':
-    resolution: {integrity: sha512-/ZEVcz3RQIazmT9825t9+/rckUOz8vSosq4FylE4JCWmTJtQWnrbCYbC7VwdO8XLcf8iFuCM+o0pXkMKch/4iw==}
+  '@oven/bun-linux-x64-musl-baseline@1.3.6':
+    resolution: {integrity: sha512-7FjVnxnRTp/AgWqSQRT/Vt9TYmvnZ+4M+d9QOKh/Lf++wIFXFGSeAgD6bV1X/yr2UPVmZDk+xdhr2XkU7l2v3w==}
     cpu: [x64]
     os: [linux]
 
-  '@oven/bun-linux-x64-musl@1.2.9':
-    resolution: {integrity: sha512-xvoKSGzBCeTwNkLnkKlAv1xDw+HCACrUctMXx0eyWr0in/hcsG10QIfeCqec32xdunPLtOPSHv2H1CHO10LB0A==}
+  '@oven/bun-linux-x64-musl@1.3.6':
+    resolution: {integrity: sha512-YeXcJ9K6vJAt1zSkeA21J6pTe7PgDMLTHKGI3nQBiMYnYf7Ob3K+b/ChSCznrJG7No5PCPiQPg4zTgA+BOTmSA==}
     cpu: [x64]
     os: [linux]
 
-  '@oven/bun-linux-x64@1.2.9':
-    resolution: {integrity: sha512-FoTJmItasGca/GDpwsBPTCbzxGngSgtbXxuV8JjQYDr4YeoRGt6Upc3FH7UV9uBBwxRRYb9sdvyqge1u+Pf/rQ==}
+  '@oven/bun-linux-x64@1.3.6':
+    resolution: {integrity: sha512-egfngj0dfJ868cf30E7B+ye9KUWSebYxOG4l9YP5eWeMXCtenpenx0zdKtAn9qxJgEJym5AN6trtlk+J6x8Lig==}
     cpu: [x64]
     os: [linux]
 
-  '@oven/bun-windows-x64-baseline@1.2.9':
-    resolution: {integrity: sha512-PhcIgGkcJwylH5MgRidgnMfIELT7a7ikOIbjFkkMTVetm3K1j4U1K2aH9paBrWVs6K57088E2CItCM0rvQd1QQ==}
+  '@oven/bun-windows-x64-baseline@1.3.6':
+    resolution: {integrity: sha512-PFUa7JL4lGoyyppeS4zqfuoXXih+gSE0XxhDMrCPVEUev0yhGNd/tbWBvcdpYnUth80owENoGjc8s5Knopv9wA==}
     cpu: [x64]
     os: [win32]
 
-  '@oven/bun-windows-x64@1.2.9':
-    resolution: {integrity: sha512-jAcIc+NBBzw0VQc+mx/Xwqiv3aubGiXMakYUcr40HpTiuokVn0Kl/U4SKt0IQ12l1wxBpfd6nIwKaXH6Yb3p8w==}
+  '@oven/bun-windows-x64@1.3.6':
+    resolution: {integrity: sha512-Sr1KwUcbB0SEpnSPO22tNJppku2khjFluEst+mTGhxHzAGQTQncNeJxDnt3F15n+p9Q+mlcorxehd68n1siikQ==}
     cpu: [x64]
     os: [win32]
 
@@ -1494,8 +1494,9 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  bun@1.2.9:
-    resolution: {integrity: sha512-4l1MnbCk2aEDeyJPs8+St6XsVPwkQvq7XTHG501e7pdFOWvWCy9shfxsHtBwYzmT82gdvx9//AL4qStYfYMO4Q==}
+  bun@1.3.6:
+    resolution: {integrity: sha512-Tn98GlZVN2WM7+lg/uGn5DzUao37Yc0PUz7yzYHdeF5hd+SmHQGbCUIKE4Sspdgtxn49LunK3mDNBC2Qn6GJjw==}
+    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -2306,8 +2307,8 @@ packages:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
-  next@15.1.0:
-    resolution: {integrity: sha512-QKhzt6Y8rgLNlj30izdMbxAwjHMFANnLwDwZ+WQh5sMhyt4lEBqDK9QpvWHtIM4rINKPoJ8aiRZKg5ULSybVHw==}
+  next@15.1.11:
+    resolution: {integrity: sha512-UiVJaOGhKST58AadwbFUZThlNBmYhKqaCs8bVtm4plTxsgKq0mJ0zTsp7t7j/rzsbAEj9WcAMdZCztjByi4EoQ==}
     engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
     hasBin: true
     peerDependencies:
@@ -3169,34 +3170,34 @@ snapshots:
       '@tybys/wasm-util': 0.9.0
     optional: true
 
-  '@next/env@15.1.0': {}
+  '@next/env@15.1.11': {}
 
   '@next/eslint-plugin-next@15.3.0':
     dependencies:
       fast-glob: 3.3.1
 
-  '@next/swc-darwin-arm64@15.1.0':
+  '@next/swc-darwin-arm64@15.1.9':
     optional: true
 
-  '@next/swc-darwin-x64@15.1.0':
+  '@next/swc-darwin-x64@15.1.9':
     optional: true
 
-  '@next/swc-linux-arm64-gnu@15.1.0':
+  '@next/swc-linux-arm64-gnu@15.1.9':
     optional: true
 
-  '@next/swc-linux-arm64-musl@15.1.0':
+  '@next/swc-linux-arm64-musl@15.1.9':
     optional: true
 
-  '@next/swc-linux-x64-gnu@15.1.0':
+  '@next/swc-linux-x64-gnu@15.1.9':
     optional: true
 
-  '@next/swc-linux-x64-musl@15.1.0':
+  '@next/swc-linux-x64-musl@15.1.9':
     optional: true
 
-  '@next/swc-win32-arm64-msvc@15.1.0':
+  '@next/swc-win32-arm64-msvc@15.1.9':
     optional: true
 
-  '@next/swc-win32-x64-msvc@15.1.0':
+  '@next/swc-win32-x64-msvc@15.1.9':
     optional: true
 
   '@nodelib/fs.scandir@2.1.5':
@@ -3213,37 +3214,37 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@oven/bun-darwin-aarch64@1.2.9':
+  '@oven/bun-darwin-aarch64@1.3.6':
     optional: true
 
-  '@oven/bun-darwin-x64-baseline@1.2.9':
+  '@oven/bun-darwin-x64-baseline@1.3.6':
     optional: true
 
-  '@oven/bun-darwin-x64@1.2.9':
+  '@oven/bun-darwin-x64@1.3.6':
     optional: true
 
-  '@oven/bun-linux-aarch64-musl@1.2.9':
+  '@oven/bun-linux-aarch64-musl@1.3.6':
     optional: true
 
-  '@oven/bun-linux-aarch64@1.2.9':
+  '@oven/bun-linux-aarch64@1.3.6':
     optional: true
 
-  '@oven/bun-linux-x64-baseline@1.2.9':
+  '@oven/bun-linux-x64-baseline@1.3.6':
     optional: true
 
-  '@oven/bun-linux-x64-musl-baseline@1.2.9':
+  '@oven/bun-linux-x64-musl-baseline@1.3.6':
     optional: true
 
-  '@oven/bun-linux-x64-musl@1.2.9':
+  '@oven/bun-linux-x64-musl@1.3.6':
     optional: true
 
-  '@oven/bun-linux-x64@1.2.9':
+  '@oven/bun-linux-x64@1.3.6':
     optional: true
 
-  '@oven/bun-windows-x64-baseline@1.2.9':
+  '@oven/bun-windows-x64-baseline@1.3.6':
     optional: true
 
-  '@oven/bun-windows-x64@1.2.9':
+  '@oven/bun-windows-x64@1.3.6':
     optional: true
 
   '@pkgjs/parseargs@0.11.0':
@@ -4253,19 +4254,19 @@ snapshots:
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
 
-  bun@1.2.9:
+  bun@1.3.6:
     optionalDependencies:
-      '@oven/bun-darwin-aarch64': 1.2.9
-      '@oven/bun-darwin-x64': 1.2.9
-      '@oven/bun-darwin-x64-baseline': 1.2.9
-      '@oven/bun-linux-aarch64': 1.2.9
-      '@oven/bun-linux-aarch64-musl': 1.2.9
-      '@oven/bun-linux-x64': 1.2.9
-      '@oven/bun-linux-x64-baseline': 1.2.9
-      '@oven/bun-linux-x64-musl': 1.2.9
-      '@oven/bun-linux-x64-musl-baseline': 1.2.9
-      '@oven/bun-windows-x64': 1.2.9
-      '@oven/bun-windows-x64-baseline': 1.2.9
+      '@oven/bun-darwin-aarch64': 1.3.6
+      '@oven/bun-darwin-x64': 1.3.6
+      '@oven/bun-darwin-x64-baseline': 1.3.6
+      '@oven/bun-linux-aarch64': 1.3.6
+      '@oven/bun-linux-aarch64-musl': 1.3.6
+      '@oven/bun-linux-x64': 1.3.6
+      '@oven/bun-linux-x64-baseline': 1.3.6
+      '@oven/bun-linux-x64-musl': 1.3.6
+      '@oven/bun-linux-x64-musl-baseline': 1.3.6
+      '@oven/bun-windows-x64': 1.3.6
+      '@oven/bun-windows-x64-baseline': 1.3.6
 
   busboy@1.6.0:
     dependencies:
@@ -5214,9 +5215,9 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  next@15.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  next@15.1.11(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
-      '@next/env': 15.1.0
+      '@next/env': 15.1.11
       '@swc/counter': 0.1.3
       '@swc/helpers': 0.5.15
       busboy: 1.6.0
@@ -5226,14 +5227,14 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
       styled-jsx: 5.1.6(react@19.1.0)
     optionalDependencies:
-      '@next/swc-darwin-arm64': 15.1.0
-      '@next/swc-darwin-x64': 15.1.0
-      '@next/swc-linux-arm64-gnu': 15.1.0
-      '@next/swc-linux-arm64-musl': 15.1.0
-      '@next/swc-linux-x64-gnu': 15.1.0
-      '@next/swc-linux-x64-musl': 15.1.0
-      '@next/swc-win32-arm64-msvc': 15.1.0
-      '@next/swc-win32-x64-msvc': 15.1.0
+      '@next/swc-darwin-arm64': 15.1.9
+      '@next/swc-darwin-x64': 15.1.9
+      '@next/swc-linux-arm64-gnu': 15.1.9
+      '@next/swc-linux-arm64-musl': 15.1.9
+      '@next/swc-linux-x64-gnu': 15.1.9
+      '@next/swc-linux-x64-musl': 15.1.9
+      '@next/swc-win32-arm64-msvc': 15.1.9
+      '@next/swc-win32-x64-msvc': 15.1.9
       sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
