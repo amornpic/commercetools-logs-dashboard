@@ -2,6 +2,7 @@
 
 import { Severity } from "@/types"
 import { cookies } from 'next/headers';
+import { InventoryPagedQueryResponse, Product, ProductPagedQueryResponse, ProductTypePagedQueryResponse } from '@commercetools/platform-sdk';
 
 // Types based on commercetools API
 export interface Deployment {
@@ -250,7 +251,7 @@ export const apiFetch = async <T>(endpoint: string, options: FetchOptions = {}):
   });
 
   if (!response.ok) {
-    console.log('response', response);
+    console.log('response', await response.json());
     
     throw new Error(`API error: ${response.statusText}`);
   }
@@ -371,6 +372,150 @@ export async function fetchCustomObjects(
     console.error("Error fetching deployment logs:", error)
 
     // Return mock data for development/demo purposes
+    return {
+      results: [],
+      total: 0,
+      offset: 0,
+      limit: 0,
+      count: 0,
+    }
+  }
+}
+export interface ProductQueryParams {
+  limit?: number
+  offset?: number
+  where?: string[]
+  sort?: string[]
+  searchQuery?: string
+}
+
+export async function fetchProducts(
+  params: ProductQueryParams = {},
+): Promise<ProductPagedQueryResponse> {
+  try {
+    let url = `/products`
+    let productIds: string[] = []
+
+    if (params.searchQuery) {
+      const q = params.searchQuery
+      const searchPayload = {
+        query: {
+          or: [
+            { wildcard: { field: "name", language: "en-US", value: `*${q}*` } },
+            { wildcard: { field: "name", language: "th-TH", value: `*${q}*` } },
+            { wildcard: { field: "variants.sku", fieldType: "text", value: `*${q}*` } },
+            { exact: { field: "id", value: q } }
+          ]
+        },
+        limit: params.limit || 50,
+        offset: params.offset || 0
+      }
+      
+      const searchData = await apiFetch<any>(`/products/search`, {
+        method: 'POST',
+        body: JSON.stringify(searchPayload)
+      })
+      
+      if (searchData.results && searchData.results.length > 0) {
+        productIds = searchData.results.map((r: any) => r.id)
+      } else {
+        return {
+          results: [],
+          total: 0,
+          offset: params.offset || 0,
+          limit: params.limit || 0,
+          count: 0,
+        }
+      }
+    }
+
+    const queryParams = new URLSearchParams()
+    
+    // if (params.sort) {
+    //   params.sort.forEach(s => queryParams.append("sort", s))
+    // } else {
+    //   queryParams.append("sort", "lastModifiedAt")
+    // }
+
+    if (productIds.length > 0) {
+      const idsString = productIds.map(id => `"${id}"`).join(", ")
+      queryParams.append("where", `id in (${idsString})`)
+    } else if (params.where) {
+      params.where.forEach(w => queryParams.append("where", w))
+    }
+    
+    queryParams.append("expand", "productType")
+
+    if (params.limit) queryParams.append("limit", params.limit.toString())
+    if (params.offset) queryParams.append("offset", params.offset.toString())
+      console.log(`${url}?${queryParams.toString()}`);
+      
+    const data = await apiFetch<ProductPagedQueryResponse>(`${url}?sort=lastModifiedAt+desc&${queryParams.toString()}`)
+
+    return data
+  } catch (error) {
+
+    return {
+      results: [],
+      total: 0,
+      offset: 0,
+      limit: 0,
+      count: 0,
+    }
+  }
+}
+
+export interface InventoryQueryParams {
+  limit?: number
+  offset?: number
+  where?: string[]
+  sort?: string[]
+  sku?: string[]
+}
+
+export async function fetchInventory(
+  params: InventoryQueryParams = {},
+): Promise<InventoryPagedQueryResponse> {
+  try {
+    let url = `/inventory`
+
+    if (params.sku?.length) {
+      url += `?where=sku in (${params.sku.length > 1 ? params.sku?.join(",") : `"${params.sku[0]}"`})`
+    }
+
+    const data = await apiFetch<InventoryPagedQueryResponse>(url)
+
+    return data
+  } catch (error) {
+    console.error("Error fetchInventory:", error)
+
+    return {
+      results: [],
+      total: 0,
+      offset: 0,
+      limit: 0,
+      count: 0,
+    }
+  }
+}
+
+// https://docs.commercetools.com/api/projects/productTypes#query-producttypes
+export async function fetchProductTypes(
+  params: InventoryQueryParams = {},
+): Promise<ProductTypePagedQueryResponse> {
+  try {
+    let url = `/product-types`
+
+    // if (params.sku?.length) {
+    //   url += `?where=sku in (${params.sku?.join(",")})`
+    // }
+
+    const data = await apiFetch<ProductTypePagedQueryResponse>(url)
+
+    return data
+  } catch (error) {
+    console.error("Error fetchProductTypes:", error)
+
     return {
       results: [],
       total: 0,

@@ -19,20 +19,3 @@ export function useCustomObjects(params: CustomObjectQueryParams = {}) {
     keepPreviousData: true,
   })
 }
-
-// Hook for fetching a single custom object
-// export function useCustomObject(container: string, key: string) {
-//   return useQuery({
-//     queryKey: queryKeys.customObject(container, key),
-//     queryFn: () => getCustomObject(container, key),
-//     enabled: !!container && !!key,
-//   })
-// }
-
-// // Hook for fetching unique containers
-// export function useCustomObjectContainers() {
-//   return useQuery({
-//     queryKey: queryKeys.containers(),
-//     queryFn: () => getContainers(),
-//   })
-// }
