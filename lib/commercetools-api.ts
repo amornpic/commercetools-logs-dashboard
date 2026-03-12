@@ -330,7 +330,7 @@ export interface CustomObjectQueryParams {
   limit?: number
   offset?: number
   container?: string
-  key?: string
+  key?: string | string[]
   where?: string[]
   sort?: string[]
 }
@@ -340,21 +340,37 @@ export async function fetchCustomObjects(
   params: CustomObjectQueryParams = {},
 ): Promise<CustomObjectPagedQueryResponse> {
   try {
-    let url = `/custom-objects/${params.container}`
+    let url = `/custom-objects`
+    if (params.container) {
+      url += `/${params.container}`
+    }
     // console.log('params', params);
 
-    // const queryParams = new URLSearchParams()
-    if (params.key) url += `/${params.key}`
-    // if (params.sort) {
-    //   queryParams.append("sort", 'lastModifiedAt+desc')
-    // }
-    // if (params.where) {
-    //   queryParams.append("where", params.where[0])
-    // }
+    const queryParams = new URLSearchParams()
+    if (typeof params.key === "string") {
+      url += `/${params.key}`
+    } else if (Array.isArray(params.key) && params.key.length > 0) {
+      const keysString = params.key.map((k) => `"${k}"`).join(", ")
+      queryParams.append("where", `key in (${keysString})`)
+    }
 
-    // console.log('url', url);
+    if (params.where) {
+      params.where.forEach((w) => queryParams.append("where", w))
+    }
+    
+    if (params.limit) queryParams.append("limit", params.limit.toString())
+    if (params.offset) queryParams.append("offset", params.offset.toString())
 
-    const data = await apiFetch<CustomObjectPagedQueryResponse>(url + `?sort=lastModifiedAt+desc`)
+    if (params.sort) {
+      params.sort.forEach((s) => queryParams.append("sort", s))
+    } else {
+      queryParams.append("sort", "lastModifiedAt desc")
+    }
+
+    const queryString = queryParams.toString()
+    const finalUrl = queryString ? `${url}?${queryString}` : url
+
+    const data = await apiFetch<CustomObjectPagedQueryResponse>(finalUrl)
     // console.log('data', data);
 
     if (data.hasOwnProperty("id")) {
