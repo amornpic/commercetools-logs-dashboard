@@ -21,6 +21,8 @@ type DependencyNodeData = {
   nodeType: string
   status: Status
   detail: string
+  variantSkus?: string[]
+  imageUrl?: string
 }
 
 type DependencyNode = Node<DependencyNodeData, "dependency">
@@ -71,13 +73,27 @@ function DependencyNodeComponent({ data, selected, targetPosition, sourcePositio
       <div className="flex items-center gap-3">
         <div
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+            "flex h-20 w-20 shrink-0 items-center justify-center rounded-md overflow-hidden",
             status === "valid" && "bg-node-valid/20 text-node-valid",
             status === "warning" && "bg-node-warning/20 text-node-warning",
             status === "missing" && "bg-node-missing/20 text-node-missing"
           )}
         >
-          <Icon className="h-4 w-4" />
+          {data.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={data.imageUrl}
+              alt={data.label}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none"
+                e.currentTarget.nextElementSibling?.removeAttribute("style")
+              }}
+            />
+          ) : <Icon
+            className="h-6 w-6"
+          />}
+
         </div>
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-[10px] font-medium tracking-wider text-muted-foreground">
@@ -86,6 +102,26 @@ function DependencyNodeComponent({ data, selected, targetPosition, sourcePositio
           <span className="text-sm font-semibold text-foreground truncate">
             {data.label}
           </span>
+          {data.variantSkus && data.variantSkus.length > 0 && (
+            <div className="mt-1.5 flex flex-col gap-0.5">
+              {data.variantSkus.map((sku, i) => (
+                <div key={sku + i} className="flex items-center gap-1.5">
+                  {/* <span
+                    className={cn(
+                      "h-1.5 w-1.5 shrink-0 rounded-full",
+                      i === 0
+                        ? status === "valid" ? "bg-node-valid" : status === "warning" ? "bg-node-warning" : "bg-node-missing"
+                        : "bg-muted-foreground/40"
+                    )}
+                  /> */}
+                  <span className="text-[12px] font-medium text-muted-foreground truncate">
+                    {sku}
+                    {i === 0 && <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wider"> (Master) </span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div
           className={cn(

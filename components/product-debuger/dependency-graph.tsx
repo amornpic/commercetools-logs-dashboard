@@ -9,7 +9,6 @@ import {
   useEdgesState,
   type Edge,
   type Node,
-  type OnNodeClick,
   MarkerType,
   Position,
   useReactFlow,
@@ -38,7 +37,9 @@ function getLayoutedElements(nodes: Node[], edges: Edge[], direction = 'TB') {
   dagreGraph.setGraph({ rankdir: direction })
 
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight })
+    const variantCount = (node.data as { variantSkus?: string[] })?.variantSkus?.length ?? 0
+    const h = variantCount > 0 ? nodeHeight + variantCount * 20 : nodeHeight
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: h })
   })
 
   edges.forEach((edge) => {
@@ -55,7 +56,7 @@ function getLayoutedElements(nodes: Node[], edges: Edge[], direction = 'TB') {
       sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
       position: {
         x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
+        y: nodeWithPosition.y - (dagreGraph.node(node.id)?.height ?? nodeHeight) / 2,
       },
     }
     return newNode as Node
@@ -90,6 +91,20 @@ function buildFlowNodes(graphNodes: GraphNode[]): Node[] {
       nodeType: gn.type,
       status: gn.status,
       detail: gn.detail,
+      variantSkus: gn.type === ProductType.Product
+        ? [
+            gn.masterVariant?.sku ?? "Missing",
+            ...(gn.variants?.map((v) => v.sku ?? "Missing") ?? []),
+          ]
+        : undefined,
+      imageUrl: (() => {
+        const imgAttr = gn.attributes?.find((a) => a.name === "image")
+        if (!imgAttr) return undefined
+        const v = imgAttr.value
+        if (typeof v === "string") return v
+        if (v && typeof v === "object" && "url" in v) return (v as { url: string }).url
+        return undefined
+      })(),
     },
   }))
 }
@@ -226,26 +241,13 @@ export function DependencyGraph() {
             : `Published | Key: ${product.key}`
           : `Draft | Key: ${product.key}`,
         product: product,
-        attributes: product.masterData?.current?.masterVariant?.attributes,
-      },
-      {
-        uuid: productId,
-        id: `productMasterVariant-${productId}`,
-        type: ProductType.ProductMasterVariant,
-        label: product.masterData?.current.masterVariant.sku || "Missing",
-        status: product.masterData?.current.masterVariant.sku ? "valid" : "missing",
-        detail: product.masterData?.current.masterVariant.sku
-          ? `${product.masterData.current.masterVariant.sku}`
-          : "No master variant assigned",
-        product: product,
-        variant: product.masterData?.current.masterVariant,
+        masterVariant: product.masterData?.current.masterVariant,
+        variants: product.masterData?.current.variants,
         attributes: product.masterData?.current?.masterVariant?.attributes,
       },
     ]
 
-    const graphEdges: GraphEdge[] = [
-      { source: `product-${productId}`, target: `productMasterVariant-${productId}` },
-    ]
+    const graphEdges: GraphEdge[] = []
 
     // ── Master variant inventory ──
     const masterVariantSku = product.masterData?.current.masterVariant.sku
@@ -271,27 +273,13 @@ export function DependencyGraph() {
         custom: masterInventory.custom,
       })
       graphEdges.push({
-        source: `productMasterVariant-${productId}`,
+        source: `product-${productId}`,
         target: `inventory-${productId}-${masterVariantSku}`,
       })
     }
 
-    // ── Other variants + their inventory ──
+    // ── Other variants' inventory ──
     product.masterData?.current.variants.forEach((variant) => {
-      const nodeId = `variant-${productId}-${variant.sku}`
-      graphNodes.push({
-        uuid: productId,
-        id: nodeId,
-        type: ProductType.ProductVariant,
-        label: variant.sku ?? "missing",
-        status: "valid",
-        detail: `SKU: ${variant.sku ?? "missing"} | Price: ${variant.price}`,
-        product: product,
-        variant: variant,
-        attributes: variant.attributes,
-      })
-      graphEdges.push({ source: `product-${productId}`, target: nodeId })
-
       const variantInventory = inventoryResponse?.results.find(
         (i) => i.sku === variant.sku
       )
@@ -315,7 +303,7 @@ export function DependencyGraph() {
           custom: variantInventory.custom,
         })
         graphEdges.push({
-          source: nodeId,
+          source: `product-${productId}`,
           target: `inventory-${productId}-${variant.sku}`,
         })
       }
@@ -338,7 +326,7 @@ export function DependencyGraph() {
             customObjectValue: promotionDetail.value,
           })
           graphEdges.push({
-            source: `productMasterVariant-${productId}`,
+            source: `product-${productId}`,
             target: `customObject-promotionDetail-${promotionDetailKey}`,
           })
         }
@@ -362,7 +350,7 @@ export function DependencyGraph() {
             customObjectValue: promotionProduct.value,
           })
           graphEdges.push({
-            source: `productMasterVariant-${productId}`,
+            source: `product-${productId}`,
             target: `customObject-promotionProduct-${promotionProductKey}`,
           })
         }
@@ -386,7 +374,7 @@ export function DependencyGraph() {
             customObjectValue: promotionProductGroup.value,
           })
           graphEdges.push({
-            source: `productMasterVariant-${productId}`,
+            source: `product-${productId}`,
             target: `customObject-promotionProductGroup-${promotionProductGroupKey}`,
           })
         }
@@ -416,8 +404,8 @@ export function DependencyGraph() {
     setSelectedNode(null)
   }, [graphData, setNodes, setEdges])
 
-  const onNodeClick: OnNodeClick = useCallback(
-    (_event, node) => {
+  const onNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
       const graphNode = graphData.nodes.find((gn) => gn.id === node.id)
       if (graphNode) setSelectedNode(graphNode)
     },

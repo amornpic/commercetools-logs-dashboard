@@ -33,7 +33,7 @@ export function getProductDisplayName(product: Product): string {
 }
 
 export function getProductAttribute(product: Product, attrName: string) {
-  return product.masterData?.current?.masterVariant?.attributes.find((a) => a.name === attrName)?.value
+  return product.masterData?.current?.masterVariant?.attributes?.find((a) => a.name === attrName)?.value
 }
 
 // ─── Helper functions ────────────────────────────────────────────────────────
@@ -165,8 +165,6 @@ export function getProductSellability(product: Product): ProductSellability | nu
 
 export enum ProductType {
   Product = "Product",
-  ProductMasterVariant = "ProductMasterVariant",
-  ProductVariant = "ProductVariant",
   Inventory = "Inventory",
   CustomObject = "CustomObject",
   CustomObjectPromotionDetail = "CustomObjectPromotionDetail",
@@ -182,7 +180,8 @@ export interface GraphNode {
   status: Status
   detail: string | object
   product?: Product
-  variant?: ProductVariant
+  masterVariant?: ProductVariant
+  variants?: ProductVariant[]
   attributes?: Attribute[]
   custom?: CustomFields
   customObjectValue?: object
@@ -249,29 +248,13 @@ export async function getProductGraphData(product: Product): Promise<{
           : `Published | Key: ${product.key}`
         : `Draft | Key: ${product.key}`,
       product: product,
-      attributes: product.masterData?.current?.masterVariant?.attributes,
-    },
-    {
-      uuid: productId,
-      id: `productMasterVariant-${productId}`,
-      type: ProductType.ProductMasterVariant,
-      label: product.masterData?.current.masterVariant.sku || "Missing",
-      status: product.masterData?.current.masterVariant.sku ? "valid" : "missing",
-      detail: product.masterData?.current.masterVariant.sku ? `${product.masterData.current.masterVariant.sku}` : "No master variant assigned",
-      product: product,
-      variant: product.masterData?.current.masterVariant,
+      masterVariant: product.masterData?.current.masterVariant,
+      variants: product.masterData?.current.variants,
       attributes: product.masterData?.current?.masterVariant?.attributes,
     },
   ]
 
-  const edges: GraphEdge[] = [
-    // { source: `product-${productId}`, target: `productType-${productId}` },
-    { source: `product-${productId}`, target: `productMasterVariant-${productId}` },
-    // { source: `product-${productId}`, target: `category-${productId}` },
-    // { source: `product-${productId}`, target: `price-${productId}` },
-    // { source: `price-${productId}`, target: `inventory-${productId}` },
-    // { source: `inventory-${productId}`, target: `store-${productId}` },
-  ]
+  const edges: GraphEdge[] = []
 
   const masterVariantSku = product.masterData?.current.masterVariant.sku
   const inventory = inventoryResponse.results.find((i) => i.sku === masterVariantSku)
@@ -286,7 +269,7 @@ export async function getProductGraphData(product: Product): Promise<{
         sku: inventory.sku,
         key: inventory.key,
         availableQuantity: inventory.availableQuantity,
-        quantityOnStock: inventory.quantityOnStock, 
+        quantityOnStock: inventory.quantityOnStock,
         minCartQuantity: inventory.minCartQuantity,
         maxCartQuantity: inventory.maxCartQuantity,
         restockableInDays: inventory.restockableInDays,
@@ -295,48 +278,32 @@ export async function getProductGraphData(product: Product): Promise<{
       custom: inventory.custom
     })
 
-    edges.push({ source: `productMasterVariant-${productId}`, target: `inventory-${productId}-${masterVariantSku}` })
+    edges.push({ source: `product-${productId}`, target: `inventory-${productId}-${masterVariantSku}` })
   }
 
-
   product.masterData?.current.variants.forEach((variant) => {
-    const nodeId = `variant-${productId}-${variant.sku}`
-    nodes.push({
-      uuid: productId,
-      id: nodeId,
-      type: ProductType.ProductVariant,
-      label: variant.sku ?? "missing",
-      status: "valid",
-      detail: `SKU: ${variant.sku ?? "missing"} | Price: ${variant.price}`,
-      product: product,
-      variant: variant,
-      attributes: variant.attributes,
-    })
-
-    edges.push({ source: `product-${productId}`, target: nodeId })
-
-    const inventory = inventoryResponse.results.find((i) => i.sku === variant.sku)
-    if (inventory) {
+    const variantInventory = inventoryResponse.results.find((i) => i.sku === variant.sku)
+    if (variantInventory) {
       nodes.push({
-        uuid: inventory.id,
+        uuid: variantInventory.id,
         id: `inventory-${productId}-${variant.sku}`,
         type: ProductType.Inventory,
-        label: inventory.key || inventory.sku,
-        status: inventory.availableQuantity > 0 ? "valid" : "missing",
+        label: variantInventory.key || variantInventory.sku,
+        status: variantInventory.availableQuantity > 0 ? "valid" : "missing",
         detail: {
-          sku: inventory.sku,
-          key: inventory.key,
-          availableQuantity: inventory.availableQuantity,
-          quantityOnStock: inventory.quantityOnStock, 
-          minCartQuantity: inventory.minCartQuantity,
-          maxCartQuantity: inventory.maxCartQuantity,
-          restockableInDays: inventory.restockableInDays,
-          expectedDelivery: inventory.expectedDelivery
+          sku: variantInventory.sku,
+          key: variantInventory.key,
+          availableQuantity: variantInventory.availableQuantity,
+          quantityOnStock: variantInventory.quantityOnStock,
+          minCartQuantity: variantInventory.minCartQuantity,
+          maxCartQuantity: variantInventory.maxCartQuantity,
+          restockableInDays: variantInventory.restockableInDays,
+          expectedDelivery: variantInventory.expectedDelivery
         },
-        custom: inventory.custom
+        custom: variantInventory.custom
       })
 
-      edges.push({ source: nodeId, target: `inventory-${productId}-${variant.sku}` })
+      edges.push({ source: `product-${productId}`, target: `inventory-${productId}-${variant.sku}` })
     }
   })
 
@@ -357,7 +324,7 @@ export async function getProductGraphData(product: Product): Promise<{
           customObjectValue: promotionDetail.value
         })
 
-        edges.push({ source: `productMasterVariant-${productId}`, target: `customObject-promotionDetail-${promotionDetailKey}` })
+        edges.push({ source: `product-${productId}`, target: `customObject-promotionDetail-${promotionDetailKey}` })
       }
 
     }
@@ -379,7 +346,7 @@ export async function getProductGraphData(product: Product): Promise<{
           customObjectValue: promotionProduct.value
         })
 
-        edges.push({ source: `productMasterVariant-${productId}`, target: `customObject-promotionProduct-${promotionProductKey}` })
+        edges.push({ source: `product-${productId}`, target: `customObject-promotionProduct-${promotionProductKey}` })
       }
     }
 
@@ -398,7 +365,7 @@ export async function getProductGraphData(product: Product): Promise<{
           customObjectValue: promotionProductGroup.value
         })
 
-        edges.push({ source: `productMasterVariant-${productId}`, target: `customObject-promotionProductGroup-${promotionProductGroupKey}` })
+        edges.push({ source: `product-${productId}`, target: `customObject-promotionProductGroup-${promotionProductGroupKey}` })
       }
     }
 
