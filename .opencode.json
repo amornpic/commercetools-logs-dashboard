@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "/usr/local/bin/python3",
+      "args": [
+        "-m",
+        "code_review_graph",
+        "serve"
+      ],
+      "cwd": "/Users/amornpic/code/commercetools-logs-dashboard",
+      "type": "stdio",
+      "env": []
+    }
+  }
+}
