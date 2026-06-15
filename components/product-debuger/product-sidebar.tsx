@@ -36,7 +36,7 @@ import {
   Check,
   ChevronsUpDown,
 } from "lucide-react"
-import { useProducts } from "@/hooks/use-products"
+import { useProductsSearch } from "@/hooks/use-products"
 import { useProductTypes } from "@/hooks/use-product-types"
 import { Product } from "@commercetools/platform-sdk"
 
@@ -100,7 +100,7 @@ export function ProductSidebar() {
     return params
   }, [searchQuery, selectedTypeId])
 
-  const { data: productsData, isLoading, isError, error, refetch, isRefetching } = useProducts(queryParams)
+  const { data: productsData, isLoading, isError, error, refetch, isRefetching } = useProductsSearch(queryParams)
 
   const filteredProducts = useMemo(() => {
     return productsData ? productsData?.results : []

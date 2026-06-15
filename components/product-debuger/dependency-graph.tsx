@@ -18,11 +18,13 @@ import dagre from "dagre"
 import { getProductAttribute, getProductDisplayName, GraphEdge, ProductType, type GraphNode } from "@/lib/dependency-graph-data"
 import { DependencyGraphNode } from "@/components/product-debuger/graph-node"
 import { NodeDetailPanel } from "@/components/product-debuger/node-detail-panel"
-import { useProduct } from "@/lib/product-context"
+import { useProduct as useProductContext } from "@/lib/product-context"
 import { GitBranch, Loader2 } from "lucide-react"
 
 import { useCustomObjects } from "@/hooks/use-custom-objects"
 import { useInventory } from "@/hooks/use-inventory"
+import { CustomObject } from "@commercetools/platform-sdk"
+import { useProductsSearch } from "@/hooks/use-products"
 
 const nodeTypes = {
   dependency: DependencyGraphNode,
@@ -148,7 +150,7 @@ function buildFlowEdges(
 }
 
 export function DependencyGraph() {
-  const { selectedProduct } = useProduct()
+  const { selectedProduct } = useProductContext()
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -207,6 +209,28 @@ export function DependencyGraph() {
       ? { container: "promotion_product_group", key: promotionProductGroupKeys }
       : {},
   )
+
+  const queryParams = useMemo(() => {
+      if (!promotionDetailObjects?.results) return {}
+      const promotionDetails = promotionDetailObjects?.results as CustomObject[]
+      const allVariants: string[] = []
+
+      promotionDetails.forEach((promotionDetail: {value: {variants: {type: string,variant: string}[]}}) => {
+        promotionDetail?.value?.variants?.forEach((variant: {type: string,variant: string}) => {
+          allVariants.push(variant?.variant)
+        })
+      })
+
+      if (allVariants.length === 0) return {}
+
+      const params: { limit?: number; offset?: number; where?: string[];} = {
+        limit: 50,
+        where: [`masterData(current(masterVariant(sku in (${allVariants.map((v: string) => `"${v}"`).join(",")})))) or masterData(current(variants(sku in (${allVariants.map((v: string) => `"${v}"`).join(",")}))))`]
+      }
+      return params
+    }, [promotionDetailObjects])
+  
+    const { data: productDetails } = useProductsSearch(queryParams)
 
   const isFetching =
     isInventoryFetching ||
@@ -278,6 +302,33 @@ export function DependencyGraph() {
       })
     }
 
+
+      productDetails?.results.forEach((product) => {
+              const graphNode = graphNodes.find((g) => {
+                g.uuid === product.id
+              })
+
+              if (!graphNode) {
+                const displayName = getProductDisplayName(product)
+                graphNodes.push({
+                  uuid: product.id,
+                  id: `product-${product.id}`,
+                  type: ProductType.Product,
+                  label: displayName,
+                  status: product.masterData?.published ? "valid" : "warning",
+                  detail: product.masterData?.published
+                    ? product.masterData?.hasStagedChanges
+                      ? `Published (staged changes) | Key: ${product.key}`
+                      : `Published | Key: ${product.key}`
+                    : `Draft | Key: ${product.key}`,
+                  product: product,
+                  masterVariant: product.masterData?.current.masterVariant,
+                  variants: product.masterData?.current.variants,
+                  attributes: product.masterData?.current?.masterVariant?.attributes,
+                })
+              }
+            })
+
     // ── Other variants' inventory ──
     product.masterData?.current.variants.forEach((variant) => {
       const variantInventory = inventoryResponse?.results.find(
@@ -314,7 +365,7 @@ export function DependencyGraph() {
       for (const promotionDetailKey of promotionDetailKeys) {
         const promotionDetail = promotionDetailObjects.results.find(
           (obj) => obj.key === promotionDetailKey
-        )
+        ) as CustomObject
         if (promotionDetail) {
           graphNodes.push({
             uuid: promotionDetail.id,
@@ -329,6 +380,31 @@ export function DependencyGraph() {
             source: `product-${productId}`,
             target: `customObject-promotionDetail-${promotionDetailKey}`,
           })
+
+          if (promotionDetail.value) {
+            const variants = promotionDetail.value.variants as {type: string,variant: string}[]
+            const productNodes = graphNodes.filter((node) => {
+              return node.type === ProductType.Product
+            })
+
+            productNodes.forEach((pNode) => {
+              const allVariantSkuList = [...(pNode?.variants?.map(v => v.sku) || []), pNode.masterVariant?.sku]
+
+              variants.filter(v => v.type === 'P').forEach((v) => {
+                if (allVariantSkuList.includes(v.variant)) {
+                  const edge = graphEdges.find((edge) => {
+                    return edge.source === `customObject-promotionDetail-${promotionDetailKey}` && edge.target === `product-${pNode.uuid}`
+                  })
+                  if (!edge) {
+                    graphEdges.push({
+                      source: `customObject-promotionDetail-${promotionDetailKey}`,
+                      target: `product-${pNode.uuid}`,
+                    })  
+                  }
+                }
+              })
+            })
+          }
         }
       }
     }
@@ -382,7 +458,7 @@ export function DependencyGraph() {
     }
 
     return { nodes: graphNodes, edges: graphEdges }
-  }, [selectedProduct, inventoryResponse, isPromotionSet, promotionDetailKeys, promotionDetailObjects, promotionProductKeys, promotionProductObjects, promotionProductGroupKeys, promotionProductGroupObjects])
+  }, [selectedProduct, inventoryResponse, isPromotionSet, promotionDetailKeys, promotionDetailObjects, promotionProductKeys, promotionProductObjects, promotionProductGroupKeys, promotionProductGroupObjects, productDetails])
 
   // ─── Layout the graph when data changes ──────────────────────────────────
   useEffect(() => {

@@ -224,7 +224,9 @@ export const apiFetchConnect = async <T>(endpoint: string, options: FetchOptions
   });
 
   if (!response.ok) {
-    console.log('response', response);
+    console.log('endpoint ->', endpoint);
+    console.log('options ->', options);
+    console.log('response ->', response);
     
     throw new Error(`API error: ${response.statusText}`);
   }
@@ -251,7 +253,9 @@ export const apiFetch = async <T>(endpoint: string, options: FetchOptions = {}):
   });
 
   if (!response.ok) {
-    console.log('response', await response.json());
+    console.log('endpoint ->', endpoint);
+    console.log('options ->', options);
+    console.log('response ->', await response.json());
     
     throw new Error(`API error: ${response.statusText}`);
   }
@@ -405,9 +409,12 @@ export interface ProductQueryParams {
   searchQuery?: string
 }
 
-export async function fetchProducts(
+export async function fetchProductsSearch(
   params: ProductQueryParams = {},
 ): Promise<ProductPagedQueryResponse> {
+
+  console.log('fetchProductsSearch ->', params)
+
   try {
     let url = `/products`
     let productIds: string[] = []
