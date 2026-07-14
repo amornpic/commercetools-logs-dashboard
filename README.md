@@ -13,6 +13,9 @@ Supports multiple commercetools projects (e.g. dev / UAT / prod) behind an in-ap
 
 ## Screenshots
 
+Product Debugger
+![product-debugger](/images/product-debuger.jpg)
+
 Deployments
 ![deployments](/images/deployments.jpg)
 ![deployments-detail](/images/deployments-detail.jpg)
@@ -24,9 +27,6 @@ Logs
 Custom objects
 ![custom-objects](/images/custom-objects.jpg)
 ![custom-objects-detail](/images/custom-objects-detail.jpg)
-
-Product Debugger
-![product-debugger](/images/product-debuger.jpg)
 
 ## Tech stack
 
